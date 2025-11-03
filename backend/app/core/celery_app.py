@@ -54,4 +54,16 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.analytics.cleanup_expired_alerts",
         "schedule": crontab(hour=2, minute=0),
     },
+
+    # Calculate release scores every Monday at 6 AM UTC
+    "calculate-release-scores": {
+        "task": "app.tasks.releases.calculate_release_scores",
+        "schedule": crontab(day_of_week=1, hour=6, minute=0),
+    },
+
+    # Scrape competing releases daily at 3 AM UTC
+    "scrape-competing-releases": {
+        "task": "app.tasks.releases.scrape_competing_releases",
+        "schedule": crontab(hour=3, minute=0),
+    },
 }
