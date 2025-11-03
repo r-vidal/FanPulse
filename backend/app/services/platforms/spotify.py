@@ -75,7 +75,7 @@ class SpotifyService(PlatformServiceBase):
             method="POST",
             url="https://accounts.spotify.com/api/token",
             headers=headers,
-            json=data,
+            data=data,  # Use data instead of json for form-encoded
         )
 
         return {
@@ -105,7 +105,7 @@ class SpotifyService(PlatformServiceBase):
             method="POST",
             url="https://accounts.spotify.com/api/token",
             headers=headers,
-            json=data,
+            data=data,  # Use data instead of json for form-encoded
         )
 
         return {
@@ -235,7 +235,7 @@ class SpotifyService(PlatformServiceBase):
             method="POST",
             url="https://accounts.spotify.com/api/token",
             headers=headers,
-            json=data,
+            data=data,  # Use data instead of json for form-encoded
         )
 
         return response["access_token"]
