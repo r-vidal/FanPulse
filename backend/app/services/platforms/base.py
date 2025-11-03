@@ -70,9 +70,18 @@ class PlatformServiceBase(ABC):
         headers: Optional[Dict[str, str]] = None,
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Make HTTP request with retry logic and error handling
+
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            url: Request URL
+            headers: Optional headers
+            params: Optional query parameters
+            json: Optional JSON body (for Content-Type: application/json)
+            data: Optional form data (for Content-Type: application/x-www-form-urlencoded)
         """
         try:
             response = await self.client.request(
@@ -81,6 +90,7 @@ class PlatformServiceBase(ABC):
                 headers=headers,
                 params=params,
                 json=json,
+                data=data,
             )
 
             # Check for rate limiting
