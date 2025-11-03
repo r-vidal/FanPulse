@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
-import { Home, Users, BarChart3, Settings, LogOut, Calendar, DollarSign, Key, FileText, Bell, Crown, ListTodo, Activity } from 'lucide-react'
+import { Home, Users, BarChart3, Settings, LogOut, Calendar, DollarSign, Key, FileText, Bell, Crown, ListTodo, Activity, Heart } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
 interface DashboardLayoutProps {
@@ -24,6 +24,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Actions', href: '/dashboard/actions', icon: ListTodo },
     { name: 'Momentum', href: '/dashboard/momentum', icon: Activity },
+    { name: 'Superfans', href: '/dashboard/superfans', icon: Heart },
     { name: 'Artists', href: '/dashboard/artists', icon: Users },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
