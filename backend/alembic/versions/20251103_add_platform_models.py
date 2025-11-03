@@ -26,10 +26,25 @@ def upgrade() -> None:
         END $$;
     """)
 
-    # Reference the ENUM type (don't try to create it)
+    # Create enum for subscription tiers using SQL to handle "already exists" gracefully
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE subscriptiontier AS ENUM ('solo', 'pro', 'label', 'enterprise');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Reference the ENUM types (don't try to create them)
     platform_type_enum = postgresql.ENUM(
         'spotify', 'apple_music', 'youtube', 'instagram', 'tiktok', 'twitter',
         name='platformtype',
+        create_type=False
+    )
+
+    subscription_tier_enum = postgresql.ENUM(
+        'solo', 'pro', 'label', 'enterprise',
+        name='subscriptiontier',
         create_type=False
     )
 
@@ -39,8 +54,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('email', sa.String(), nullable=False, unique=True, index=True),
         sa.Column('hashed_password', sa.String(), nullable=False),
-        sa.Column('full_name', sa.String()),
-        sa.Column('is_active', sa.Boolean(), default=True, nullable=False),
+        sa.Column('subscription_tier', subscription_tier_enum, server_default='solo', nullable=False),
         sa.Column('is_verified', sa.Boolean(), default=False, nullable=False),
         sa.Column('verification_token', sa.String(), nullable=True),
         sa.Column('reset_token', sa.String(), nullable=True),
@@ -194,6 +208,9 @@ def downgrade() -> None:
     op.drop_table('artists')
     op.drop_table('users')
 
-    # Drop enum type
+    # Drop enum types
     platform_type_enum = postgresql.ENUM(name='platformtype')
     platform_type_enum.drop(op.get_bind(), checkfirst=True)
+
+    subscription_tier_enum = postgresql.ENUM(name='subscriptiontier')
+    subscription_tier_enum.drop(op.get_bind(), checkfirst=True)
