@@ -33,3 +33,5 @@ class User(Base):
     # Relationships
     artists = relationship("Artist", back_populates="user", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="user", cascade="all, delete-orphan")
+    alert_rules = relationship("AlertRule", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
