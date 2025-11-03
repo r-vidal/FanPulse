@@ -21,7 +21,9 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
     subscription_tier = Column(
-        Enum(SubscriptionTier), default=SubscriptionTier.SOLO, nullable=False
+        Enum(SubscriptionTier, values_callable=lambda x: [e.value for e in x]),
+        default=SubscriptionTier.SOLO,
+        nullable=False
     )
     is_verified = Column(Boolean, default=False, nullable=False)
     verification_token = Column(String, nullable=True)

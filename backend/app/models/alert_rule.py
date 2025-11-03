@@ -32,7 +32,7 @@ class AlertRule(Base):
     artist_id = Column(UUID(as_uuid=True), ForeignKey("artists.id"), nullable=False)
 
     # Rule configuration
-    rule_type = Column(Enum(AlertRuleType), nullable=False)
+    rule_type = Column(Enum(AlertRuleType, values_callable=lambda x: [e.value for e in x]), nullable=False)
     name = Column(String, nullable=False)
     description = Column(Text)
 
