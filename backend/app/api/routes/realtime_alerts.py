@@ -94,7 +94,7 @@ async def scan_current_opportunities(
 @router.get("/alerts", response_model=List[AlertResponse])
 async def get_alerts(
     unread_only: bool = Query(default=False, description="Show only unread alerts"),
-    priority: Optional[AlertPriority] = Query(default=None, description="Filter by priority"),
+    priority: Optional[AlertSeverity] = Query(default=None, description="Filter by severity"),
     limit: int = Query(default=50, le=200, description="Maximum alerts to return"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
