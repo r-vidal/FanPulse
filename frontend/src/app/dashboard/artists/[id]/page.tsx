@@ -19,11 +19,24 @@ interface Artist {
   created_at: string
 }
 
+interface ArtistStats {
+  followers: number
+  popularity: number
+  monthly_listeners: number
+  top_tracks: Array<{
+    id: string
+    name: string
+    popularity: number
+  }>
+}
+
 export default function ArtistDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [artist, setArtist] = useState<Artist | null>(null)
+  const [stats, setStats] = useState<ArtistStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [statsLoading, setStatsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -38,12 +51,34 @@ export default function ArtistDetailPage() {
       const response = await api.get(`/api/artists/${artistId}`)
       setArtist(response.data)
       setError(null)
+
+      // If artist has Spotify ID, fetch stats
+      if (response.data.spotify_id) {
+        fetchStats(artistId)
+      }
     } catch (err: any) {
       console.error('Failed to fetch artist:', err)
       setError('Failed to load artist details')
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchStats = async (artistId: string) => {
+    try {
+      setStatsLoading(true)
+      const response = await api.get(`/api/artists/${artistId}/stats`)
+      setStats(response.data)
+    } catch (err: any) {
+      console.error('Failed to fetch stats:', err)
+      // Don't show error for stats, just keep them empty
+    } finally {
+      setStatsLoading(false)
+    }
+  }
+
+  const handleConnectSpotify = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/spotify/authorize`
   }
 
   if (loading) {
@@ -174,29 +209,72 @@ export default function ArtistDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-500">Total Streams</h3>
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+                <h3 className="text-sm font-medium text-gray-500">Followers</h3>
+                <Users className="w-5 h-5 text-blue-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">-</p>
-              <p className="text-sm text-gray-600 mt-2">Connect Spotify to track</p>
+              {statsLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-9 bg-gray-200 rounded w-24 mb-2"></div>
+                </div>
+              ) : stats ? (
+                <>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {stats.followers.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">Spotify followers</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-gray-900">-</p>
+                  <p className="text-sm text-gray-600 mt-2">Data unavailable</p>
+                </>
+              )}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-gray-500">Monthly Listeners</h3>
-                <Users className="w-5 h-5 text-purple-500" />
+                <TrendingUp className="w-5 h-5 text-purple-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">-</p>
-              <p className="text-sm text-gray-600 mt-2">Connect Spotify to track</p>
+              {statsLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-9 bg-gray-200 rounded w-24 mb-2"></div>
+                </div>
+              ) : stats ? (
+                <>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {stats.monthly_listeners.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">Estimated listeners</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-gray-900">-</p>
+                  <p className="text-sm text-gray-600 mt-2">Data unavailable</p>
+                </>
+              )}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-500">Momentum Score</h3>
+                <h3 className="text-sm font-medium text-gray-500">Popularity</h3>
                 <TrendingUp className="w-5 h-5 text-green-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">-</p>
-              <p className="text-sm text-gray-600 mt-2">Data available soon</p>
+              {statsLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-9 bg-gray-200 rounded w-24 mb-2"></div>
+                </div>
+              ) : stats ? (
+                <>
+                  <p className="text-3xl font-bold text-gray-900">{stats.popularity}/100</p>
+                  <p className="text-sm text-gray-600 mt-2">Spotify popularity score</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-gray-900">-</p>
+                  <p className="text-sm text-gray-600 mt-2">Data unavailable</p>
+                </>
+              )}
             </div>
           </div>
 
@@ -204,28 +282,65 @@ export default function ArtistDetailPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Streaming Analytics</h2>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-              <div className="mb-4">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
-                  <TrendingUp className="w-8 h-8 text-blue-600" />
+            {stats && stats.top_tracks && stats.top_tracks.length > 0 ? (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Top Tracks</h3>
+                <div className="space-y-2">
+                  {stats.top_tracks.slice(0, 5).map((track, index) => (
+                    <div
+                      key={track.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-semibold text-gray-400 w-6">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <p className="font-medium text-gray-900">{track.name}</p>
+                          <p className="text-sm text-gray-600">
+                            Popularity: {track.popularity}/100
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                  Connect Spotify for Detailed Analytics
-                </h3>
-                <p className="text-blue-700 mb-4">
-                  Authorize Spotify access to view streaming data, monthly listeners, and growth metrics
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> These are estimated metrics based on public Spotify data.
+                    For detailed streaming analytics, Spotify for Artists API access is required.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                <div className="mb-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
+                    <TrendingUp className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                    Analytics Data Available
+                  </h3>
+                  <p className="text-blue-700 mb-4">
+                    {artist?.spotify_id
+                      ? 'Viewing public Spotify metrics. For detailed analytics, connect your Spotify for Artists account.'
+                      : 'Connect this artist to Spotify to view streaming analytics.'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleConnectSpotify}
+                  className="px-6 py-3 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors inline-flex items-center"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
+                  Connect Spotify for Enhanced Analytics
+                </button>
+                <p className="text-xs text-gray-600 mt-3">
+                  Optional: Get access to detailed streaming statistics and historical data
                 </p>
               </div>
-              <button className="px-6 py-3 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors inline-flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-                </svg>
-                Connect Spotify Account
-              </button>
-              <p className="text-xs text-gray-600 mt-3">
-                This will allow FanPulse to access your artist's streaming statistics
-              </p>
-            </div>
+            )}
           </div>
 
           {/* Recent Activity Placeholder */}
