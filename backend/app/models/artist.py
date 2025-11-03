@@ -25,3 +25,6 @@ class Artist(Base):
     superfans = relationship("Superfan", back_populates="artist", cascade="all, delete-orphan")
     streams = relationship("Stream", back_populates="artist", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="artist", cascade="all, delete-orphan")
+    platform_connections = relationship("PlatformConnection", back_populates="artist", cascade="all, delete-orphan")
+    stream_history = relationship("StreamHistory", back_populates="artist", cascade="all, delete-orphan")
+    social_posts = relationship("SocialPost", back_populates="artist", cascade="all, delete-orphan")

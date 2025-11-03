@@ -15,9 +15,18 @@ Base = declarative_base()
 
 
 def get_db():
-    """Database session dependency"""
+    """Database session dependency for FastAPI"""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+def get_db_sync():
+    """
+    Database session for synchronous usage (e.g., Celery tasks)
+
+    Returns the same generator as get_db, to be used with next()
+    """
+    return get_db()
