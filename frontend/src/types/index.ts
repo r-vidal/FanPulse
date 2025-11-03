@@ -2,8 +2,9 @@
 export interface User {
   id: string
   email: string
-  subscriptionTier: 'solo' | 'pro' | 'label' | 'enterprise'
-  createdAt: string
+  subscription_tier: 'solo' | 'pro' | 'label' | 'enterprise'
+  is_verified: boolean
+  created_at: string
 }
 
 // Artist types
