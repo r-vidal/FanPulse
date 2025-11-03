@@ -66,4 +66,16 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.releases.scrape_competing_releases",
         "schedule": crontab(hour=3, minute=0),
     },
+
+    # Calculate revenue forecasts monthly on 1st at 5 AM UTC
+    "calculate-revenue-forecasts": {
+        "task": "app.tasks.revenue.calculate_revenue_forecasts",
+        "schedule": crontab(day_of_month=1, hour=5, minute=0),
+    },
+
+    # Clean up old revenue forecasts monthly on 1st at 4 AM UTC
+    "cleanup-old-forecasts": {
+        "task": "app.tasks.revenue.cleanup_old_forecasts",
+        "schedule": crontab(day_of_month=1, hour=4, minute=0),
+    },
 }

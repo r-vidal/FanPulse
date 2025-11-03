@@ -4,7 +4,7 @@ from app.core.config import settings
 from app.api.routes import (
     health, artists, auth, platforms, analytics, alerts,
     spotify_auth, instagram_auth, tiktok_auth, youtube_auth,
-    stream_history, momentum, actions, releases
+    stream_history, momentum, actions, releases, revenue
 )
 
 app = FastAPI(
@@ -37,6 +37,7 @@ app.include_router(stream_history.router, prefix="/api/stream-history", tags=["s
 app.include_router(momentum.router, prefix="/api/momentum", tags=["momentum"])
 app.include_router(actions.router, prefix="/api/actions", tags=["actions"])
 app.include_router(releases.router, prefix="/api/releases", tags=["releases"])
+app.include_router(revenue.router, prefix="/api/revenue", tags=["revenue"])
 
 
 @app.get("/")
