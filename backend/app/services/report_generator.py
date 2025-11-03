@@ -21,7 +21,7 @@ from app.models.report import (
     BrandingSettings, ReportTemplate, GeneratedReport,
     ReportFormat, ReportPeriod, ReportStatus
 )
-from app.models.analytics import StreamHistory
+from app.models.stream_history import StreamHistory
 from app.models.momentum import MomentumScore
 from app.models.revenue import RevenueForecast, ForecastScenario
 
