@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from app.core.database import get_db
@@ -17,10 +17,10 @@ from app.utils.tokens import (
     get_reset_token_expiry,
     is_token_expired,
 )
+from app.api.deps import get_current_user
 from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 class UserCreate(BaseModel):
@@ -117,32 +117,11 @@ async def login(
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+async def get_me(
+    current_user: User = Depends(get_current_user)
 ):
     """Get current authenticated user"""
-    from app.core.security import decode_token
-
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    payload = decode_token(token)
-    if payload is None:
-        raise credentials_exception
-
-    email: str = payload.get("sub")
-    if email is None:
-        raise credentials_exception
-
-    user = db.query(User).filter(User.email == email).first()
-    if user is None:
-        raise credentials_exception
-
-    return user
+    return current_user
 
 
 @router.post("/forgot-password", response_model=MessageResponse)
