@@ -6,7 +6,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
 import Alert from '@/components/ui/Alert'
 import { api } from '@/lib/api'
-import { Music } from 'lucide-react'
+import { Music, Trash2 } from 'lucide-react'
 
 interface Artist {
   id: string
@@ -40,6 +40,21 @@ export default function DashboardPage() {
       setError('Failed to load artists')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const deleteArtist = async (artistId: string, artistName: string) => {
+    if (!confirm(`Are you sure you want to delete ${artistName}? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      await api.delete(`/api/artists/${artistId}`)
+      // Remove artist from state
+      setArtists(artists.filter(a => a.id !== artistId))
+    } catch (err: any) {
+      console.error('Failed to delete artist:', err)
+      alert('Failed to delete artist. Please try again.')
     }
   }
 
@@ -126,7 +141,8 @@ export default function DashboardPage() {
                 {artists.map((artist) => (
                   <div
                     key={artist.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative group cursor-pointer"
+                    onClick={() => window.location.href = `/dashboard/artists/${artist.id}`}
                   >
                     <div className="flex items-center gap-3">
                       {artist.image_url ? (
@@ -158,6 +174,16 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteArtist(artist.id, artist.name)
+                      }}
+                      className="absolute top-2 right-2 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete artist"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
