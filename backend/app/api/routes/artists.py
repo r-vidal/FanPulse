@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
@@ -10,6 +11,8 @@ from app.models.platform import PlatformConnection, PlatformType
 from app.services.platforms.spotify import SpotifyService
 from pydantic import BaseModel, ConfigDict, field_serializer
 from datetime import datetime
+import csv
+import io
 
 router = APIRouter()
 
@@ -316,3 +319,86 @@ async def get_artist_stats(
         )
     finally:
         await spotify.close()
+
+
+@router.get("/export/csv")
+async def export_artists_csv(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Export all artists to CSV format
+
+    Returns CSV with columns: name, genre, spotify_id, instagram_id,
+    youtube_id, followers, popularity, created_at
+    """
+    # Get all artists for current user
+    artists = db.query(Artist).filter(Artist.user_id == current_user.id).all()
+
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write header
+    writer.writerow([
+        'Name',
+        'Genre',
+        'Spotify ID',
+        'Instagram ID',
+        'YouTube ID',
+        'Followers',
+        'Popularity',
+        'Monthly Listeners (Est.)',
+        'Image URL',
+        'Added Date'
+    ])
+
+    # Fetch stats for each artist
+    spotify = SpotifyService()
+    try:
+        access_token = await spotify.get_client_credentials_token()
+
+        for artist in artists:
+            # Default values
+            followers = '-'
+            popularity = '-'
+            monthly_listeners = '-'
+
+            # Fetch stats if Spotify connected
+            if artist.spotify_id:
+                try:
+                    stats = await spotify.get_streaming_stats(
+                        platform_artist_id=artist.spotify_id,
+                        access_token=access_token
+                    )
+                    followers = stats.get('followers', '-')
+                    popularity = stats.get('popularity', '-')
+                    monthly_listeners = stats.get('monthly_listeners', '-')
+                except:
+                    pass  # Keep defaults if fetch fails
+
+            # Write row
+            writer.writerow([
+                artist.name,
+                artist.genre or '-',
+                artist.spotify_id or '-',
+                artist.instagram_id or '-',
+                artist.youtube_id or '-',
+                followers,
+                popularity,
+                monthly_listeners,
+                artist.image_url or '-',
+                artist.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            ])
+    finally:
+        await spotify.close()
+
+    # Prepare response
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=fanpulse_artists_{datetime.utcnow().strftime('%Y%m%d')}.csv"
+        }
+    )
