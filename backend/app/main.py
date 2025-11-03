@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health, artists, auth, platforms, analytics, alerts
+from app.api.routes import health, artists, auth, platforms, analytics, alerts, spotify_auth
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -25,6 +25,7 @@ app.include_router(artists.router, prefix="/api/artists", tags=["artists"])
 app.include_router(platforms.router, prefix="/api", tags=["platforms"])
 app.include_router(analytics.router, prefix="/api", tags=["analytics"])
 app.include_router(alerts.router, prefix="/api", tags=["alerts"])
+app.include_router(spotify_auth.router, prefix="/api/spotify", tags=["spotify-auth"])
 
 
 @app.get("/")

@@ -247,3 +247,56 @@ async def import_spotify_artist(
         )
     finally:
         await spotify.close()
+
+
+@router.get("/{artist_id}/stats", response_model=dict)
+async def get_artist_stats(
+    artist_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get streaming statistics for an artist
+
+    Returns estimated metrics based on public Spotify data.
+    Note: Detailed streaming stats require Spotify for Artists API access.
+    """
+    # Get artist and verify ownership
+    artist = db.query(Artist).filter(
+        Artist.id == artist_id,
+        Artist.user_id == current_user.id
+    ).first()
+
+    if not artist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Artist not found"
+        )
+
+    if not artist.spotify_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Artist does not have a Spotify connection"
+        )
+
+    spotify = SpotifyService()
+
+    try:
+        # Get access token using client credentials
+        access_token = await spotify.get_client_credentials_token()
+
+        # Fetch streaming stats
+        stats = await spotify.get_streaming_stats(
+            platform_artist_id=artist.spotify_id,
+            access_token=access_token
+        )
+
+        return stats
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch artist stats: {str(e)}"
+        )
+    finally:
+        await spotify.close()
