@@ -78,4 +78,28 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.revenue.cleanup_old_forecasts",
         "schedule": crontab(day_of_month=1, hour=4, minute=0),
     },
+
+    # Calculate daily API key usage summaries at 1 AM UTC
+    "calculate-api-key-summaries": {
+        "task": "app.tasks.api_keys.calculate_daily_summaries",
+        "schedule": crontab(hour=1, minute=0),
+    },
+
+    # Clean up old API key logs daily at 2 AM UTC
+    "cleanup-old-api-key-logs": {
+        "task": "app.tasks.api_keys.cleanup_old_logs",
+        "schedule": crontab(hour=2, minute=30),
+    },
+
+    # Mark expired API keys every hour
+    "mark-expired-api-keys": {
+        "task": "app.tasks.api_keys.mark_expired_keys",
+        "schedule": 60 * 60,  # Every hour
+    },
+
+    # Send usage alerts every 15 minutes
+    "send-api-key-usage-alerts": {
+        "task": "app.tasks.api_keys.send_usage_alerts",
+        "schedule": 15 * 60,  # Every 15 minutes
+    },
 }
