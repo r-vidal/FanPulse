@@ -114,4 +114,22 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.reports.cleanup_old_reports",
         "schedule": crontab(day_of_week=0, hour=3, minute=0),
     },
+
+    # Scan for opportunities and send real-time alerts every 15 minutes
+    "scan-opportunities": {
+        "task": "app.tasks.realtime_alerts.scan_opportunities",
+        "schedule": 15 * 60,  # Every 15 minutes
+    },
+
+    # Send WebSocket heartbeat every 30 seconds
+    "send-websocket-heartbeat": {
+        "task": "app.tasks.realtime_alerts.send_heartbeat",
+        "schedule": 30,  # Every 30 seconds
+    },
+
+    # Clean up old alerts daily at 3 AM UTC
+    "cleanup-old-alerts": {
+        "task": "app.tasks.realtime_alerts.cleanup_old_alerts",
+        "schedule": crontab(hour=3, minute=0),
+    },
 }
