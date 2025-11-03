@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
-import { Home, Users, BarChart3, Settings, LogOut } from 'lucide-react'
+import { Home, Users, BarChart3, Settings, LogOut, Calendar, DollarSign, Key, FileText, Bell, Crown } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
 interface DashboardLayoutProps {
@@ -26,6 +26,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ]
+
+  // PRO tier features
+  const proNavigation = [
+    { name: 'Release Optimizer', href: '/dashboard/releases', icon: Calendar },
+    { name: 'Revenue Forecasting', href: '/dashboard/forecasts', icon: DollarSign },
+    { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
+    { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+    { name: 'Alerts', href: '/dashboard/alerts', icon: Bell },
+  ]
+
+  const isPro = user?.subscription_tier === 'pro' || user?.subscription_tier === 'label' || user?.subscription_tier === 'enterprise'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,6 +61,28 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               {item.name}
             </Link>
           ))}
+
+          {/* PRO Features Section */}
+          {isPro && (
+            <>
+              <div className="mt-6 mb-3 px-4 flex items-center gap-2">
+                <Crown className="h-4 w-4 text-yellow-600" />
+                <span className="text-xs font-bold text-yellow-600 uppercase tracking-wider">
+                  PRO Features
+                </span>
+              </div>
+              {proNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-900 rounded-lg mb-2 transition-colors"
+                >
+                  <item.icon className="h-5 w-5 mr-3" />
+                  {item.name}
+                </Link>
+              ))}
+            </>
+          )}
         </nav>
 
         {/* User info & Logout */}
