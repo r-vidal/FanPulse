@@ -36,12 +36,11 @@ class OpportunityResponse(BaseModel):
 class AlertResponse(BaseModel):
     """Alert response"""
     id: UUID
-    type: AlertType
-    priority: AlertPriority
-    title: str
+    alert_type: AlertType
+    severity: AlertSeverity
     message: str
     data: dict
-    is_read: bool
+    resolved_at: Optional[datetime] = None
     created_at: datetime
 
     class Config:
@@ -108,10 +107,10 @@ async def get_alerts(
     query = db.query(Alert).filter(Alert.user_id == current_user.id)
 
     if unread_only:
-        query = query.filter(Alert.is_read == False)
+        query = query.filter(Alert.resolved_at == None)
 
     if priority:
-        query = query.filter(Alert.priority == priority)
+        query = query.filter(Alert.severity == priority)
 
     alerts = query.order_by(Alert.created_at.desc()).limit(limit).all()
 
@@ -139,18 +138,18 @@ async def get_alert_stats(
 
     # Calculate statistics
     total_alerts = len(alerts)
-    unread_alerts = sum(1 for a in alerts if not a.is_read)
+    unread_alerts = sum(1 for a in alerts if a.resolved_at is None)
 
-    # Group by priority
+    # Group by severity
     alerts_by_priority = {}
-    for priority in AlertPriority:
-        count = sum(1 for a in alerts if a.priority == priority)
-        alerts_by_priority[priority.value] = count
+    for severity in AlertSeverity:
+        count = sum(1 for a in alerts if a.severity == severity)
+        alerts_by_priority[severity.value] = count
 
     # Group by type
     alerts_by_type = {}
     for alert_type in AlertType:
-        count = sum(1 for a in alerts if a.type == alert_type)
+        count = sum(1 for a in alerts if a.alert_type == alert_type)
         alerts_by_type[alert_type.value] = count
 
     # Get recent alerts
@@ -187,8 +186,7 @@ async def mark_alert_as_read(
             detail="Alert not found"
         )
 
-    alert.is_read = True
-    alert.read_at = datetime.utcnow()
+    alert.resolved_at = datetime.utcnow()
     db.commit()
 
 
@@ -204,10 +202,9 @@ async def mark_all_alerts_as_read(
     """
     db.query(Alert).filter(
         Alert.user_id == current_user.id,
-        Alert.is_read == False,
+        Alert.resolved_at == None,
     ).update({
-        "is_read": True,
-        "read_at": datetime.utcnow(),
+        "resolved_at": datetime.utcnow(),
     }, synchronize_session=False)
 
     db.commit()
@@ -253,7 +250,7 @@ async def delete_all_alerts(
     query = db.query(Alert).filter(Alert.user_id == current_user.id)
 
     if read_only:
-        query = query.filter(Alert.is_read == True)
+        query = query.filter(Alert.resolved_at != None)
 
     query.delete(synchronize_session=False)
     db.commit()
