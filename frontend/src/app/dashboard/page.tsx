@@ -30,6 +30,19 @@ export default function DashboardPage() {
             </Alert>
           )}
 
+          {/* Quick Actions */}
+          <div className="flex justify-end">
+            <a
+              href="/dashboard/artists/add"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Ajouter un artiste
+            </a>
+          </div>
+
           {/* Quick Stats Placeholder */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-lg shadow">
