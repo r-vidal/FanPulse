@@ -1,7 +1,12 @@
-# Fix Login Issue - AlertPriority Error
+# Fix Login and Actions Issues
 
-## Problem
-The login is failing because the `alerts` table schema in the database doesn't match the current code model, causing a `NameError: name 'AlertPriority' is not defined` error.
+## Problems Fixed
+
+### 1. Login Issue - AlertPriority Error
+The login was failing because the `alerts` table schema in the database doesn't match the current code model, causing a `NameError: name 'AlertPriority' is not defined` error.
+
+### 2. Actions Endpoint - created_at Validation Error
+The `/api/actions/next` endpoint was failing with a Pydantic validation error because `created_at` was None.
 
 ## Solution
 I've created a database migration to fix the schema mismatch. Follow these steps:
@@ -39,6 +44,8 @@ docker-compose logs -f backend
 
 ## What was fixed
 
+### Alert Schema Fix
+
 1. **Created new migration** (`20251103_fix_alerts_schema.py`):
    - Drops and recreates the `alerts` table with correct schema
    - Adds `AlertType` enum (viral, engagement_drop, opportunity, threat)
@@ -47,6 +54,13 @@ docker-compose logs -f backend
 
 2. **Updated migration chain**:
    - `001_platform_models` → `001a_fix_alerts` → `002_alerts_notifications` → ...
+
+### Action Engine Fix
+
+3. **Fixed NextBestAction timestamps** (`action_engine.py`):
+   - Added explicit `created_at=datetime.utcnow()` to all action instantiations
+   - Ensures generated actions have valid timestamps for Pydantic validation
+   - Fixes ValidationError in `/api/actions/next` endpoint
 
 ## Alternative: Fresh Database Start
 
