@@ -6,7 +6,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
 import Alert from '@/components/ui/Alert'
 import { api } from '@/lib/api'
-import { Music, Trash2 } from 'lucide-react'
+import { Music, Trash2, Download } from 'lucide-react'
 
 interface Artist {
   id: string
@@ -58,6 +58,26 @@ export default function DashboardPage() {
     }
   }
 
+  const exportToCSV = async () => {
+    try {
+      const response = await api.get('/api/artists/export/csv', {
+        responseType: 'blob'
+      })
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `fanpulse_artists_${new Date().toISOString().split('T')[0]}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch (err: any) {
+      console.error('Failed to export CSV:', err)
+      alert('Failed to export data. Please try again.')
+    }
+  }
+
   return (
     <ProtectedRoute>
       <DashboardLayout>
@@ -88,7 +108,15 @@ export default function DashboardPage() {
           )}
 
           {/* Quick Actions */}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={exportToCSV}
+              disabled={artists.length === 0}
+              className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="w-5 h-5 mr-2" />
+              Export CSV
+            </button>
             <a
               href="/dashboard/artists/add"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
