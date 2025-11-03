@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
-from app.models.alert import Alert, AlertType, AlertPriority
+from app.models.alert import Alert, AlertType, AlertSeverity
 from app.services.opportunity_detector import get_opportunity_detector
 
 logger = logging.getLogger(__name__)

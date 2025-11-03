@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 from app.models.artist import Artist
 from app.models.stream_history import StreamHistory
-from app.models.alert import Alert, AlertType, AlertPriority
+from app.models.alert import Alert, AlertType, AlertSeverity
 
 logger = logging.getLogger(__name__)
 

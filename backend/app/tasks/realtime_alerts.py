@@ -5,7 +5,7 @@ from datetime import datetime
 from app.core.celery_app import celery_app
 from app.core.database import get_db_sync
 from app.models.user import User
-from app.models.alert import Alert, AlertType, AlertPriority
+from app.models.alert import Alert, AlertType, AlertSeverity
 from app.services.opportunity_detector import get_opportunity_detector
 from app.websocket.connection_manager import manager
 
@@ -60,10 +60,9 @@ def scan_opportunities_task() -> dict:
                         alert = Alert(
                             user_id=user.id,
                             artist_id=opp.get("artist_id"),
-                            type=AlertType.OPPORTUNITY,
-                            priority=_map_priority(opp.get("priority", "medium")),
-                            title=opp.get("title"),
-                            message=opp.get("message"),
+                            alert_type=AlertType.OPPORTUNITY,
+                            severity=_map_priority(opp.get("priority", "medium")),
+                            message=f"{opp.get('title')}: {opp.get('message')}",
                             data=opp.get("data", {}),
                         )
                         db.add(alert)
@@ -181,12 +180,13 @@ def cleanup_old_alerts_task() -> dict:
         }
 
 
-def _map_priority(priority_str: str) -> AlertPriority:
-    """Map string priority to AlertPriority enum"""
+def _map_priority(priority_str: str) -> AlertSeverity:
+    """Map string priority to AlertSeverity enum"""
     mapping = {
-        "low": AlertPriority.LOW,
-        "medium": AlertPriority.MEDIUM,
-        "high": AlertPriority.HIGH,
-        "urgent": AlertPriority.HIGH,
+        "low": AlertSeverity.INFO,
+        "medium": AlertSeverity.WARNING,
+        "high": AlertSeverity.URGENT,
+        "critical": AlertSeverity.URGENT,
+        "urgent": AlertSeverity.URGENT,
     }
-    return mapping.get(priority_str.lower(), AlertPriority.MEDIUM)
+    return mapping.get(priority_str.lower(), AlertSeverity.WARNING)
