@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health, artists, auth, platforms, analytics, alerts, spotify_auth, stream_history, momentum, actions, instagram_auth
+from app.api.routes import (
+    health, artists, auth, platforms, analytics, alerts,
+    spotify_auth, instagram_auth, tiktok_auth, youtube_auth,
+    stream_history, momentum, actions, releases
+)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -27,9 +31,12 @@ app.include_router(analytics.router, prefix="/api", tags=["analytics"])
 app.include_router(alerts.router, prefix="/api", tags=["alerts"])
 app.include_router(spotify_auth.router, prefix="/api/spotify", tags=["spotify-auth"])
 app.include_router(instagram_auth.router, prefix="/api/instagram", tags=["instagram-auth"])
+app.include_router(tiktok_auth.router, prefix="/api/tiktok", tags=["tiktok-auth"])
+app.include_router(youtube_auth.router, prefix="/api/youtube", tags=["youtube-auth"])
 app.include_router(stream_history.router, prefix="/api/stream-history", tags=["stream-history"])
 app.include_router(momentum.router, prefix="/api/momentum", tags=["momentum"])
 app.include_router(actions.router, prefix="/api/actions", tags=["actions"])
+app.include_router(releases.router, prefix="/api/releases", tags=["releases"])
 
 
 @app.get("/")
