@@ -17,14 +17,23 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create enum for alert rule types
+    # Create enum for alert rule types using SQL to handle "already exists" gracefully
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE alertruletype AS ENUM ('momentum_spike', 'momentum_drop', 'fvs_threshold', 'follower_milestone',
+                'viral_post', 'engagement_drop', 'superfan_churn', 'growth_stall');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Reference the ENUM type (don't try to create it)
     alert_rule_type_enum = postgresql.ENUM(
         'momentum_spike', 'momentum_drop', 'fvs_threshold', 'follower_milestone',
         'viral_post', 'engagement_drop', 'superfan_churn', 'growth_stall',
         name='alertruletype',
-        create_type=True
+        create_type=False
     )
-    alert_rule_type_enum.create(op.get_bind(), checkfirst=True)
 
     # Create alert_rules table
     op.create_table(
