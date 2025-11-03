@@ -26,7 +26,7 @@ tenacity==9.0.0
 
 # Data processing
 pandas==2.2.3
-numpy==2.1.1
+numpy>=1.23.0,<2.0.0
 
 # Caching
 redis==5.0.8
