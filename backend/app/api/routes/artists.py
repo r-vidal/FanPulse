@@ -16,11 +16,11 @@ router = APIRouter()
 
 class ArtistCreate(BaseModel):
     name: str
-    genre: str = None
-    spotify_id: str = None
-    instagram_id: str = None
-    youtube_id: str = None
-    image_url: str = None
+    genre: Optional[str] = None
+    spotify_id: Optional[str] = None
+    instagram_id: Optional[str] = None
+    youtube_id: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class SpotifyArtistImport(BaseModel):
@@ -33,11 +33,11 @@ class ArtistResponse(BaseModel):
 
     id: UUID
     name: str
-    genre: str = None
-    spotify_id: str = None
-    instagram_id: str = None
-    youtube_id: str = None
-    image_url: str = None
+    genre: Optional[str] = None
+    spotify_id: Optional[str] = None
+    instagram_id: Optional[str] = None
+    youtube_id: Optional[str] = None
+    image_url: Optional[str] = None
     created_at: datetime
 
     @field_serializer('id')
