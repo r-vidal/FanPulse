@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from uuid import UUID
 from app.core.database import get_db
 from app.core.security import (
     verify_password,
@@ -18,7 +19,7 @@ from app.utils.tokens import (
     is_token_expired,
 )
 from app.api.deps import get_current_user
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_serializer, ConfigDict
 
 router = APIRouter()
 
@@ -29,12 +30,15 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: str
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
     email: str
     subscription_tier: str
 
-    class Config:
-        from_attributes = True
+    @field_serializer('id')
+    def serialize_id(self, value: UUID) -> str:
+        return str(value)
 
 
 class Token(BaseModel):
