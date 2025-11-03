@@ -24,7 +24,7 @@ class PlatformConnection(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     artist_id = Column(UUID(as_uuid=True), ForeignKey("artists.id"), nullable=False)
-    platform_type = Column(Enum(PlatformType), nullable=False)
+    platform_type = Column(Enum(PlatformType, values_callable=lambda x: [e.value for e in x]), nullable=False)
 
     # Platform-specific IDs
     platform_artist_id = Column(String, nullable=False)  # e.g., Spotify artist ID
