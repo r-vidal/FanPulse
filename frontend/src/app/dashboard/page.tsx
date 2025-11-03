@@ -141,7 +141,8 @@ export default function DashboardPage() {
                 {artists.map((artist) => (
                   <div
                     key={artist.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative group"
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative group cursor-pointer"
+                    onClick={() => window.location.href = `/dashboard/artists/${artist.id}`}
                   >
                     <div className="flex items-center gap-3">
                       {artist.image_url ? (
@@ -174,7 +175,10 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => deleteArtist(artist.id, artist.name)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteArtist(artist.id, artist.name)
+                      }}
                       className="absolute top-2 right-2 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                       title="Delete artist"
                     >
