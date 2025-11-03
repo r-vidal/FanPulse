@@ -36,7 +36,7 @@ export default function AddArtistPage() {
     setError(null)
 
     try {
-      const response = await api.get('/artists/search/spotify', {
+      const response = await api.get('/api/artists/search/spotify', {
         params: { q: searchQuery }
       })
       setSearchResults(response.data)
@@ -57,7 +57,7 @@ export default function AddArtistPage() {
     setError(null)
 
     try {
-      await api.post('/artists/import/spotify', {
+      await api.post('/api/artists/import/spotify', {
         spotify_id: spotifyId
       })
 
