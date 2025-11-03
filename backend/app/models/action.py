@@ -61,8 +61,8 @@ class NextBestAction(Base):
     snoozed_until = Column(DateTime)
 
     # Relationships
-    artist = relationship("Artist", backref="actions")
-    user = relationship("User", backref="actions")
+    artist = relationship("Artist", back_populates="actions")
+    user = relationship("User", back_populates="actions")
 
     def __repr__(self):
         return f"<NextBestAction {self.action_type} for Artist {self.artist_id}>"

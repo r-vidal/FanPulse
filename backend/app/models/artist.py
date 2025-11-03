@@ -29,3 +29,4 @@ class Artist(Base):
     platform_connections = relationship("PlatformConnection", back_populates="artist", cascade="all, delete-orphan")
     stream_history = relationship("StreamHistory", back_populates="artist", cascade="all, delete-orphan")
     social_posts = relationship("SocialPost", back_populates="artist", cascade="all, delete-orphan")
+    actions = relationship("NextBestAction", back_populates="artist", cascade="all, delete-orphan")

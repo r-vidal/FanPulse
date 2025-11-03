@@ -6,7 +6,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.artist import Artist
 from app.models.platform import PlatformConnection, PlatformType
-from app.services.platforms.instagram import InstagramService
+from app.services.platforms.youtube import YouTubeService
 from datetime import datetime, timedelta
 import secrets
 import logging
@@ -20,14 +20,14 @@ oauth_states = {}
 
 
 @router.get("/authorize")
-async def instagram_authorize(
+async def youtube_authorize(
     artist_id: str = Query(..., description="Artist ID to connect"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Initiate Instagram OAuth flow for an artist
-    Redirects user to Instagram authorization page
+    Initiate YouTube OAuth flow for an artist
+    Redirects user to Google authorization page
     """
     # Verify artist belongs to user
     artist = db.query(Artist).filter(
@@ -41,7 +41,7 @@ async def instagram_authorize(
             detail="Artist not found"
         )
 
-    instagram = InstagramService()
+    youtube = YouTubeService()
 
     try:
         # Generate random state for CSRF protection
@@ -52,31 +52,31 @@ async def instagram_authorize(
             "created_at": datetime.utcnow()
         }
 
-        # Get Instagram authorization URL
-        auth_url = await instagram.get_authorization_url(state)
+        # Get YouTube authorization URL
+        auth_url = await youtube.get_authorization_url(state)
 
         return RedirectResponse(url=auth_url)
 
     finally:
-        await instagram.close()
+        await youtube.close()
 
 
 @router.get("/callback")
-async def instagram_callback(
-    code: str = Query(..., description="Authorization code from Instagram"),
+async def youtube_callback(
+    code: str = Query(..., description="Authorization code from Google"),
     state: str = Query(..., description="State parameter for CSRF protection"),
-    error: str = Query(None, description="Error from Instagram"),
+    error: str = Query(None, description="Error from Google"),
     db: Session = Depends(get_db)
 ):
     """
-    Handle Instagram OAuth callback
+    Handle YouTube OAuth callback
     Exchanges code for access token and stores it
     """
-    # Check for errors from Instagram
+    # Check for errors from Google
     if error:
-        logger.error(f"Instagram OAuth error: {error}")
+        logger.error(f"YouTube OAuth error: {error}")
         return RedirectResponse(
-            url=f"/dashboard?error=instagram_auth_failed",
+            url=f"/dashboard?error=youtube_auth_failed",
             status_code=status.HTTP_302_FOUND
         )
 
@@ -108,71 +108,101 @@ async def instagram_callback(
             status_code=status.HTTP_302_FOUND
         )
 
-    instagram = InstagramService()
+    youtube = YouTubeService()
 
     try:
         # Exchange authorization code for tokens
-        token_data = await instagram.exchange_code_for_token(code)
+        token_data = await youtube.exchange_code_for_token(code)
+
+        if not token_data.get("refresh_token"):
+            logger.warning("No refresh token received - user may have already authorized")
 
         # Calculate token expiry
-        expires_at = datetime.utcnow() + timedelta(seconds=token_data.get("expires_in", 5184000))
+        expires_at = datetime.utcnow() + timedelta(seconds=token_data.get("expires_in", 3600))
 
-        # Get Instagram profile data
-        user_profile = await instagram.get_artist_data(
-            platform_artist_id=token_data["user_id"],
-            access_token=token_data["access_token"]
+        # Get user's YouTube channel
+        # First, try to get the channel for the authenticated user
+        headers = {"Authorization": f"Bearer {token_data['access_token']}"}
+        params = {
+            "part": "snippet,statistics,contentDetails",
+            "mine": "true",
+        }
+
+        channel_response = await youtube.make_request(
+            method="GET",
+            url=f"{youtube.base_url}/channels",
+            headers=headers,
+            params=params,
         )
 
-        username = user_profile.get("username")
-        logger.info(f"Instagram user authenticated: {username}")
+        if not channel_response.get("items"):
+            logger.error("No YouTube channel found for authenticated user")
+            return RedirectResponse(
+                url=f"/dashboard/artists/{artist_id}?error=no_youtube_channel",
+                status_code=status.HTTP_302_FOUND
+            )
+
+        channel = channel_response["items"][0]
+        channel_id = channel["id"]
+        snippet = channel.get("snippet", {})
+        statistics = channel.get("statistics", {})
+
+        channel_title = snippet.get("title")
+        logger.info(f"YouTube channel authenticated: {channel_title}")
 
         # Check if platform connection already exists
         existing_connection = db.query(PlatformConnection).filter(
             PlatformConnection.artist_id == artist_id,
-            PlatformConnection.platform_type == PlatformType.INSTAGRAM
+            PlatformConnection.platform_type == PlatformType.YOUTUBE
         ).first()
 
         if existing_connection:
             # Update existing connection
             existing_connection.access_token = token_data["access_token"]
-            existing_connection.refresh_token = token_data.get("refresh_token")
+            existing_connection.refresh_token = token_data.get("refresh_token") or existing_connection.refresh_token
             existing_connection.token_expires_at = expires_at
-            existing_connection.platform_username = username
-            existing_connection.platform_artist_id = token_data["user_id"]
+            existing_connection.platform_username = snippet.get("customUrl") or channel_title
+            existing_connection.platform_artist_id = channel_id
             existing_connection.is_active = True
             existing_connection.last_synced_at = datetime.utcnow()
             existing_connection.platform_data = {
-                "followers": user_profile.get("followers", 0),
-                "following": user_profile.get("following", 0),
-                "media_count": user_profile.get("media_count", 0),
-                "profile_picture": user_profile.get("profile_picture"),
-                "account_type": user_profile.get("account_type", "personal"),
+                "channel_title": channel_title,
+                "description": snippet.get("description"),
+                "custom_url": snippet.get("customUrl"),
+                "subscribers": int(statistics.get("subscriberCount", 0)),
+                "total_views": int(statistics.get("viewCount", 0)),
+                "video_count": int(statistics.get("videoCount", 0)),
+                "thumbnail": snippet.get("thumbnails", {}).get("default", {}).get("url"),
+                "country": snippet.get("country"),
             }
         else:
             # Create new platform connection
             platform_connection = PlatformConnection(
                 artist_id=artist_id,
-                platform_type=PlatformType.INSTAGRAM,
-                platform_artist_id=token_data["user_id"],
-                platform_username=username,
+                platform_type=PlatformType.YOUTUBE,
+                platform_artist_id=channel_id,
+                platform_username=snippet.get("customUrl") or channel_title,
                 access_token=token_data["access_token"],
                 refresh_token=token_data.get("refresh_token"),
                 token_expires_at=expires_at,
                 is_active=True,
                 last_synced_at=datetime.utcnow(),
                 platform_data={
-                    "followers": user_profile.get("followers", 0),
-                    "following": user_profile.get("following", 0),
-                    "media_count": user_profile.get("media_count", 0),
-                    "profile_picture": user_profile.get("profile_picture"),
-                    "account_type": user_profile.get("account_type", "personal"),
+                    "channel_title": channel_title,
+                    "description": snippet.get("description"),
+                    "custom_url": snippet.get("customUrl"),
+                    "subscribers": int(statistics.get("subscriberCount", 0)),
+                    "total_views": int(statistics.get("viewCount", 0)),
+                    "video_count": int(statistics.get("videoCount", 0)),
+                    "thumbnail": snippet.get("thumbnails", {}).get("default", {}).get("url"),
+                    "country": snippet.get("country"),
                 }
             )
             db.add(platform_connection)
 
-        # Update artist instagram_id
-        if not artist.instagram_id:
-            artist.instagram_id = username
+        # Update artist youtube_id
+        if not artist.youtube_id:
+            artist.youtube_id = channel_id
 
         db.commit()
 
@@ -186,29 +216,29 @@ async def instagram_callback(
             oauth_states.pop(s, None)
 
         return RedirectResponse(
-            url=f"/dashboard/artists/{artist_id}?instagram_connected=true",
+            url=f"/dashboard/artists/{artist_id}?youtube_connected=true",
             status_code=status.HTTP_302_FOUND
         )
 
     except Exception as e:
-        logger.error(f"Failed to connect Instagram: {str(e)}")
+        logger.error(f"Failed to connect YouTube: {str(e)}")
         return RedirectResponse(
-            url=f"/dashboard/artists/{artist_id}?error=instagram_connection_failed",
+            url=f"/dashboard/artists/{artist_id}?error=youtube_connection_failed&detail={str(e)}",
             status_code=status.HTTP_302_FOUND
         )
 
     finally:
-        await instagram.close()
+        await youtube.close()
 
 
 @router.get("/disconnect/{artist_id}")
-async def instagram_disconnect(
+async def youtube_disconnect(
     artist_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Disconnect Instagram integration for an artist
+    Disconnect YouTube integration for an artist
     """
     # Verify artist belongs to user
     artist = db.query(Artist).filter(
@@ -222,16 +252,16 @@ async def instagram_disconnect(
             detail="Artist not found"
         )
 
-    # Delete Instagram platform connection
+    # Delete YouTube platform connection
     deleted_count = db.query(PlatformConnection).filter(
         PlatformConnection.artist_id == artist_id,
-        PlatformConnection.platform_type == PlatformType.INSTAGRAM
+        PlatformConnection.platform_type == PlatformType.YOUTUBE
     ).delete(synchronize_session=False)
 
     db.commit()
 
     return {
-        "message": "Instagram disconnected successfully",
+        "message": "YouTube disconnected successfully",
         "artist_id": artist_id,
         "deleted": deleted_count > 0
     }

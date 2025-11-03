@@ -52,8 +52,11 @@ class Settings(BaseSettings):
     TIKTOK_CLIENT_SECRET: str = ""
     TIKTOK_REDIRECT_URI: str = "http://localhost:3000/connect/tiktok/callback"
 
-    # YouTube API (for future implementation)
+    # YouTube API
     YOUTUBE_API_KEY: str = ""
+    YOUTUBE_CLIENT_ID: str = ""
+    YOUTUBE_CLIENT_SECRET: str = ""
+    YOUTUBE_REDIRECT_URI: str = "http://localhost:3000/connect/youtube/callback"
 
     # Email
     SENDGRID_API_KEY: str = ""

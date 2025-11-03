@@ -36,24 +36,24 @@ async def fetch_platform_data_async(connection: PlatformConnection, db_session) 
     """
     Async helper to fetch data from a single platform connection
     """
+    from app.services.token_manager import token_manager
+
     service = get_platform_service(connection.platform_type)
     if not service:
         logger.warning(f"No service available for platform: {connection.platform_type}")
         return {"status": "skipped", "platform": connection.platform_type.value}
 
     try:
-        # Check if token needs refresh
-        if service.is_token_expired(connection.token_expires_at):
-            if connection.refresh_token:
-                token_data = await service.refresh_access_token(connection.refresh_token)
-                connection.access_token = token_data["access_token"]
-                connection.token_expires_at = service.get_token_expiry(token_data["expires_in"])
-                db_session.commit()
-            else:
-                connection.is_active = False
-                connection.sync_error = "Token expired, no refresh token"
-                db_session.commit()
-                return {"status": "error", "platform": connection.platform_type.value, "error": "Token expired"}
+        # Ensure token is valid (auto-refresh if needed)
+        try:
+            access_token = await token_manager.ensure_valid_token(connection, db_session)
+        except Exception as token_error:
+            logger.error(f"Failed to validate token: {token_error}")
+            return {
+                "status": "error",
+                "platform": connection.platform_type.value,
+                "error": f"Token validation failed: {str(token_error)}"
+            }
 
         # Fetch streaming/analytics data
         if connection.platform_type in [PlatformType.SPOTIFY, PlatformType.APPLE_MUSIC]:
@@ -306,3 +306,41 @@ def calculate_momentum_task(artist_id: str) -> Optional[float]:
     except Exception as e:
         logger.error(f"Error calculating momentum: {e}")
         return None
+
+
+@celery_app.task(name="app.tasks.analytics.refresh_expiring_tokens")
+def refresh_expiring_tokens() -> dict:
+    """
+    Refresh OAuth tokens that are about to expire
+
+    This task runs hourly via Celery Beat to proactively refresh tokens
+    before they expire, preventing authentication errors.
+
+    Returns:
+        Summary of refresh operation with success/failure counts
+    """
+    try:
+        logger.info("Starting token refresh batch")
+
+        # Get database session
+        db = next(get_db_sync())
+
+        # Import token manager
+        from app.services.token_manager import token_manager
+
+        # Run the refresh operation
+        results = asyncio.run(token_manager.refresh_all_expiring_tokens(db))
+
+        logger.info(
+            f"Token refresh complete: {results['success']}/{results['total']} succeeded, "
+            f"{results['failed']} failed"
+        )
+
+        return results
+
+    except Exception as e:
+        logger.error(f"Error in token refresh task: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+        }

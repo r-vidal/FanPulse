@@ -27,10 +27,31 @@ celery_app.conf.task_routes = {
     "app.tasks.analytics.*": {"queue": "analytics"},
 }
 
-# Beat schedule for periodic tasks (optional)
+# Beat schedule for periodic tasks
+from celery.schedules import crontab
+
 celery_app.conf.beat_schedule = {
-    "fetch-artist-data-daily": {
+    # Fetch artist data from platforms every 6 hours
+    "fetch-artist-data-periodic": {
         "task": "app.tasks.analytics.fetch_all_artist_data",
         "schedule": 6 * 60 * 60,  # Every 6 hours
+    },
+
+    # Refresh expiring OAuth tokens every hour
+    "refresh-expiring-tokens": {
+        "task": "app.tasks.analytics.refresh_expiring_tokens",
+        "schedule": 60 * 60,  # Every hour
+    },
+
+    # Send weekly email reports every Monday at 8 AM UTC
+    "send-weekly-reports": {
+        "task": "app.tasks.email.send_weekly_reports",
+        "schedule": crontab(day_of_week=1, hour=8, minute=0),
+    },
+
+    # Clean up expired alert notifications daily at 2 AM UTC
+    "cleanup-expired-alerts": {
+        "task": "app.tasks.analytics.cleanup_expired_alerts",
+        "schedule": crontab(hour=2, minute=0),
     },
 }

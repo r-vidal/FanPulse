@@ -13,6 +13,9 @@ from pydantic import BaseModel, ConfigDict, field_serializer
 from datetime import datetime
 import csv
 import io
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -121,9 +124,7 @@ async def delete_artist(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Delete an artist and all related records"""
-    from app.models.stream_history import StreamHistory
-
+    """Delete an artist and all related records (cascades to all relationships)"""
     artist = db.query(Artist).filter(
         Artist.id == artist_id,
         Artist.user_id == current_user.id
@@ -136,13 +137,7 @@ async def delete_artist(
         )
 
     try:
-        # Manually delete stream_history first to avoid FK constraint issues
-        # (stream_history has FKs to both artist and platform_connection)
-        db.query(StreamHistory).filter(
-            StreamHistory.artist_id == artist_id
-        ).delete(synchronize_session=False)
-
-        # Now delete the artist (will cascade to platform_connections and other related records)
+        # Delete artist (will cascade to all related records via relationships)
         db.delete(artist)
         db.commit()
         return None

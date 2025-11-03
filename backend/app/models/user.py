@@ -37,3 +37,4 @@ class User(Base):
     alerts = relationship("Alert", back_populates="user", cascade="all, delete-orphan")
     alert_rules = relationship("AlertRule", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    actions = relationship("NextBestAction", back_populates="user", cascade="all, delete-orphan")

@@ -6,7 +6,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.artist import Artist
 from app.models.platform import PlatformConnection, PlatformType
-from app.services.platforms.instagram import InstagramService
+from app.services.platforms.tiktok import TikTokService
 from datetime import datetime, timedelta
 import secrets
 import logging
@@ -20,14 +20,14 @@ oauth_states = {}
 
 
 @router.get("/authorize")
-async def instagram_authorize(
+async def tiktok_authorize(
     artist_id: str = Query(..., description="Artist ID to connect"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Initiate Instagram OAuth flow for an artist
-    Redirects user to Instagram authorization page
+    Initiate TikTok OAuth flow for an artist
+    Redirects user to TikTok authorization page
     """
     # Verify artist belongs to user
     artist = db.query(Artist).filter(
@@ -41,7 +41,7 @@ async def instagram_authorize(
             detail="Artist not found"
         )
 
-    instagram = InstagramService()
+    tiktok = TikTokService()
 
     try:
         # Generate random state for CSRF protection
@@ -52,31 +52,31 @@ async def instagram_authorize(
             "created_at": datetime.utcnow()
         }
 
-        # Get Instagram authorization URL
-        auth_url = await instagram.get_authorization_url(state)
+        # Get TikTok authorization URL
+        auth_url = await tiktok.get_authorization_url(state)
 
         return RedirectResponse(url=auth_url)
 
     finally:
-        await instagram.close()
+        await tiktok.close()
 
 
 @router.get("/callback")
-async def instagram_callback(
-    code: str = Query(..., description="Authorization code from Instagram"),
+async def tiktok_callback(
+    code: str = Query(..., description="Authorization code from TikTok"),
     state: str = Query(..., description="State parameter for CSRF protection"),
-    error: str = Query(None, description="Error from Instagram"),
+    error: str = Query(None, description="Error from TikTok"),
     db: Session = Depends(get_db)
 ):
     """
-    Handle Instagram OAuth callback
+    Handle TikTok OAuth callback
     Exchanges code for access token and stores it
     """
-    # Check for errors from Instagram
+    # Check for errors from TikTok
     if error:
-        logger.error(f"Instagram OAuth error: {error}")
+        logger.error(f"TikTok OAuth error: {error}")
         return RedirectResponse(
-            url=f"/dashboard?error=instagram_auth_failed",
+            url=f"/dashboard?error=tiktok_auth_failed",
             status_code=status.HTTP_302_FOUND
         )
 
@@ -108,28 +108,28 @@ async def instagram_callback(
             status_code=status.HTTP_302_FOUND
         )
 
-    instagram = InstagramService()
+    tiktok = TikTokService()
 
     try:
         # Exchange authorization code for tokens
-        token_data = await instagram.exchange_code_for_token(code)
+        token_data = await tiktok.exchange_code_for_token(code)
 
         # Calculate token expiry
-        expires_at = datetime.utcnow() + timedelta(seconds=token_data.get("expires_in", 5184000))
+        expires_at = datetime.utcnow() + timedelta(seconds=token_data.get("expires_in", 86400))
 
-        # Get Instagram profile data
-        user_profile = await instagram.get_artist_data(
-            platform_artist_id=token_data["user_id"],
+        # Get TikTok profile data
+        user_profile = await tiktok.get_artist_data(
+            platform_artist_id=token_data["open_id"],
             access_token=token_data["access_token"]
         )
 
-        username = user_profile.get("username")
-        logger.info(f"Instagram user authenticated: {username}")
+        username = user_profile.get("username") or user_profile.get("display_name")
+        logger.info(f"TikTok user authenticated: {username}")
 
         # Check if platform connection already exists
         existing_connection = db.query(PlatformConnection).filter(
             PlatformConnection.artist_id == artist_id,
-            PlatformConnection.platform_type == PlatformType.INSTAGRAM
+            PlatformConnection.platform_type == PlatformType.TIKTOK
         ).first()
 
         if existing_connection:
@@ -138,22 +138,26 @@ async def instagram_callback(
             existing_connection.refresh_token = token_data.get("refresh_token")
             existing_connection.token_expires_at = expires_at
             existing_connection.platform_username = username
-            existing_connection.platform_artist_id = token_data["user_id"]
+            existing_connection.platform_artist_id = token_data["open_id"]
             existing_connection.is_active = True
             existing_connection.last_synced_at = datetime.utcnow()
             existing_connection.platform_data = {
+                "union_id": user_profile.get("union_id"),
+                "display_name": user_profile.get("display_name"),
                 "followers": user_profile.get("followers", 0),
                 "following": user_profile.get("following", 0),
-                "media_count": user_profile.get("media_count", 0),
-                "profile_picture": user_profile.get("profile_picture"),
-                "account_type": user_profile.get("account_type", "personal"),
+                "likes": user_profile.get("likes", 0),
+                "video_count": user_profile.get("video_count", 0),
+                "is_verified": user_profile.get("is_verified", False),
+                "avatar_url": user_profile.get("avatar_url"),
+                "bio": user_profile.get("bio"),
             }
         else:
             # Create new platform connection
             platform_connection = PlatformConnection(
                 artist_id=artist_id,
-                platform_type=PlatformType.INSTAGRAM,
-                platform_artist_id=token_data["user_id"],
+                platform_type=PlatformType.TIKTOK,
+                platform_artist_id=token_data["open_id"],
                 platform_username=username,
                 access_token=token_data["access_token"],
                 refresh_token=token_data.get("refresh_token"),
@@ -161,18 +165,18 @@ async def instagram_callback(
                 is_active=True,
                 last_synced_at=datetime.utcnow(),
                 platform_data={
+                    "union_id": user_profile.get("union_id"),
+                    "display_name": user_profile.get("display_name"),
                     "followers": user_profile.get("followers", 0),
                     "following": user_profile.get("following", 0),
-                    "media_count": user_profile.get("media_count", 0),
-                    "profile_picture": user_profile.get("profile_picture"),
-                    "account_type": user_profile.get("account_type", "personal"),
+                    "likes": user_profile.get("likes", 0),
+                    "video_count": user_profile.get("video_count", 0),
+                    "is_verified": user_profile.get("is_verified", False),
+                    "avatar_url": user_profile.get("avatar_url"),
+                    "bio": user_profile.get("bio"),
                 }
             )
             db.add(platform_connection)
-
-        # Update artist instagram_id
-        if not artist.instagram_id:
-            artist.instagram_id = username
 
         db.commit()
 
@@ -186,29 +190,29 @@ async def instagram_callback(
             oauth_states.pop(s, None)
 
         return RedirectResponse(
-            url=f"/dashboard/artists/{artist_id}?instagram_connected=true",
+            url=f"/dashboard/artists/{artist_id}?tiktok_connected=true",
             status_code=status.HTTP_302_FOUND
         )
 
     except Exception as e:
-        logger.error(f"Failed to connect Instagram: {str(e)}")
+        logger.error(f"Failed to connect TikTok: {str(e)}")
         return RedirectResponse(
-            url=f"/dashboard/artists/{artist_id}?error=instagram_connection_failed",
+            url=f"/dashboard/artists/{artist_id}?error=tiktok_connection_failed",
             status_code=status.HTTP_302_FOUND
         )
 
     finally:
-        await instagram.close()
+        await tiktok.close()
 
 
 @router.get("/disconnect/{artist_id}")
-async def instagram_disconnect(
+async def tiktok_disconnect(
     artist_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Disconnect Instagram integration for an artist
+    Disconnect TikTok integration for an artist
     """
     # Verify artist belongs to user
     artist = db.query(Artist).filter(
@@ -222,16 +226,16 @@ async def instagram_disconnect(
             detail="Artist not found"
         )
 
-    # Delete Instagram platform connection
+    # Delete TikTok platform connection
     deleted_count = db.query(PlatformConnection).filter(
         PlatformConnection.artist_id == artist_id,
-        PlatformConnection.platform_type == PlatformType.INSTAGRAM
+        PlatformConnection.platform_type == PlatformType.TIKTOK
     ).delete(synchronize_session=False)
 
     db.commit()
 
     return {
-        "message": "Instagram disconnected successfully",
+        "message": "TikTok disconnected successfully",
         "artist_id": artist_id,
         "deleted": deleted_count > 0
     }
