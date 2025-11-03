@@ -17,13 +17,21 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create enum for platform types
+    # Create enum for platform types using SQL to handle "already exists" gracefully
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE platformtype AS ENUM ('spotify', 'apple_music', 'youtube', 'instagram', 'tiktok', 'twitter');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Reference the ENUM type (don't try to create it)
     platform_type_enum = postgresql.ENUM(
         'spotify', 'apple_music', 'youtube', 'instagram', 'tiktok', 'twitter',
         name='platformtype',
-        create_type=True
+        create_type=False
     )
-    platform_type_enum.create(op.get_bind(), checkfirst=True)
 
     # Create users table
     op.create_table(
