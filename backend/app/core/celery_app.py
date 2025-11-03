@@ -102,4 +102,16 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.api_keys.send_usage_alerts",
         "schedule": 15 * 60,  # Every 15 minutes
     },
+
+    # Generate scheduled reports daily at 8 AM UTC
+    "generate-scheduled-reports": {
+        "task": "app.tasks.reports.generate_scheduled_reports",
+        "schedule": crontab(hour=8, minute=0),
+    },
+
+    # Clean up old reports weekly on Sunday at 3 AM UTC
+    "cleanup-old-reports": {
+        "task": "app.tasks.reports.cleanup_old_reports",
+        "schedule": crontab(day_of_week=0, hour=3, minute=0),
+    },
 }

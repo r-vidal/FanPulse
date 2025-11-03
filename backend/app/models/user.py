@@ -39,3 +39,5 @@ class User(Base):
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     actions = relationship("NextBestAction", back_populates="user", cascade="all, delete-orphan")
     api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
+    branding_settings = relationship("BrandingSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    report_templates = relationship("ReportTemplate", back_populates="user", cascade="all, delete-orphan")
