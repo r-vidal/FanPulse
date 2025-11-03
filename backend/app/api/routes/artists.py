@@ -321,6 +321,99 @@ async def get_artist_stats(
         await spotify.close()
 
 
+@router.get("/{artist_id}/instagram-stats", response_model=dict)
+async def get_artist_instagram_stats(
+    artist_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get Instagram statistics for an artist
+
+    Returns profile metrics, engagement, and recent posts data.
+    Requires artist to have an active Instagram connection.
+    """
+    from app.services.platforms.instagram import InstagramService
+    from app.models.platform import PlatformConnection, PlatformType
+
+    # Get artist and verify ownership
+    artist = db.query(Artist).filter(
+        Artist.id == artist_id,
+        Artist.user_id == current_user.id
+    ).first()
+
+    if not artist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Artist not found"
+        )
+
+    # Get Instagram platform connection
+    instagram_connection = db.query(PlatformConnection).filter(
+        PlatformConnection.artist_id == artist_id,
+        PlatformConnection.platform_type == PlatformType.INSTAGRAM,
+        PlatformConnection.is_active == True
+    ).first()
+
+    if not instagram_connection:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Artist does not have an active Instagram connection"
+        )
+
+    instagram = InstagramService()
+
+    try:
+        # Fetch Instagram stats using stored access token
+        stats = await instagram.get_streaming_stats(
+            platform_artist_id=instagram_connection.platform_artist_id,
+            access_token=instagram_connection.access_token
+        )
+
+        # Get recent media for engagement metrics
+        recent_media = await instagram.get_recent_media(
+            platform_artist_id=instagram_connection.platform_artist_id,
+            access_token=instagram_connection.access_token,
+            limit=12
+        )
+
+        # Calculate average engagement rate
+        total_engagement = 0
+        media_with_metrics = 0
+        for media in recent_media:
+            if media.get('likes') is not None and media.get('comments') is not None:
+                total_engagement += media['likes'] + media['comments']
+                media_with_metrics += 1
+
+        avg_engagement = total_engagement / media_with_metrics if media_with_metrics > 0 else 0
+        followers = stats.get('followers', 0)
+        engagement_rate = (avg_engagement / followers * 100) if followers > 0 else 0
+
+        return {
+            "platform": "instagram",
+            "username": instagram_connection.platform_username,
+            "followers": followers,
+            "impressions": stats.get('impressions', 0),
+            "reach": stats.get('reach', 0),
+            "profile_views": stats.get('profile_views', 0),
+            "recent_posts": len(recent_media),
+            "avg_engagement_per_post": round(avg_engagement, 2),
+            "engagement_rate": round(engagement_rate, 2),
+            "recent_media": recent_media[:6],  # Return top 6 recent posts
+            "timestamp": stats.get('timestamp'),
+            "account_type": instagram_connection.platform_data.get('account_type', 'personal') if instagram_connection.platform_data else 'personal'
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to fetch Instagram stats: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch Instagram stats: {str(e)}"
+        )
+    finally:
+        await instagram.close()
+
+
 @router.get("/export/csv")
 async def export_artists_csv(
     current_user: User = Depends(get_current_user),
