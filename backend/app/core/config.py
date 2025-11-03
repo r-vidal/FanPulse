@@ -29,11 +29,30 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]
 
-    # External APIs
+    # Frontend
+    FRONTEND_URL: str = "http://localhost:3000"
+
+    # Spotify API
     SPOTIFY_CLIENT_ID: str = ""
     SPOTIFY_CLIENT_SECRET: str = ""
+    SPOTIFY_REDIRECT_URI: str = "http://localhost:3000/connect/spotify/callback"
+
+    # Apple Music API
+    APPLE_TEAM_ID: str = ""
+    APPLE_KEY_ID: str = ""
+    APPLE_PRIVATE_KEY: str = ""  # PEM format private key
+
+    # Instagram API
     INSTAGRAM_CLIENT_ID: str = ""
     INSTAGRAM_CLIENT_SECRET: str = ""
+    INSTAGRAM_REDIRECT_URI: str = "http://localhost:3000/connect/instagram/callback"
+
+    # TikTok API
+    TIKTOK_CLIENT_KEY: str = ""
+    TIKTOK_CLIENT_SECRET: str = ""
+    TIKTOK_REDIRECT_URI: str = "http://localhost:3000/connect/tiktok/callback"
+
+    # YouTube API (for future implementation)
     YOUTUBE_API_KEY: str = ""
 
     # Email
