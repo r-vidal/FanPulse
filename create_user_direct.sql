@@ -15,7 +15,9 @@ INSERT INTO users (
   'pro',
   true,
   NOW()
-) ON CONFLICT (email) DO NOTHING;
+) ON CONFLICT (email) DO UPDATE SET
+  subscription_tier = 'pro',
+  is_verified = true;
 
 -- Verify the user was created
 SELECT id, email, subscription_tier, is_verified
