@@ -6,7 +6,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
 import Alert from '@/components/ui/Alert'
 import { api } from '@/lib/api'
-import { Music, Trash2, Download } from 'lucide-react'
+import { Music, Trash2, Download, Zap, AlertCircle, TrendingUp, CheckCircle } from 'lucide-react'
 
 interface Artist {
   id: string
@@ -19,14 +19,30 @@ interface Artist {
   created_at: string
 }
 
+interface NextAction {
+  id: string
+  artist_id: string
+  artist_name: string
+  action_type: string
+  title: string
+  description: string
+  urgency: string
+  reason: string | null
+  expected_impact: string | null
+  status: string
+}
+
 export default function DashboardPage() {
   const { user } = useAuthStore()
   const [artists, setArtists] = useState<Artist[]>([])
+  const [nextAction, setNextAction] = useState<NextAction | null>(null)
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchArtists()
+    fetchNextAction()
   }, [])
 
   const fetchArtists = async () => {
@@ -78,6 +94,23 @@ export default function DashboardPage() {
     }
   }
 
+  const fetchNextAction = async () => {
+    try {
+      setActionLoading(true)
+      const response = await api.get('/api/actions/next')
+      setNextAction(response.data)
+    } catch (err: any) {
+      console.error('Failed to fetch next action:', err)
+      // Don't show error - just keep it null
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleActionClick = (artistId: string) => {
+    window.location.href = `/dashboard/artists/${artistId}`
+  }
+
   return (
     <ProtectedRoute>
       <DashboardLayout>
@@ -105,6 +138,89 @@ export default function DashboardPage() {
             <Alert type="error" title="Error">
               {error}
             </Alert>
+          )}
+
+          {/* Next Best Action Widget */}
+          {!actionLoading && nextAction && (
+            <div className={`rounded-lg shadow-lg p-6 border-l-4 ${
+              nextAction.urgency === 'critical' ? 'bg-red-50 border-red-500' :
+              nextAction.urgency === 'high' ? 'bg-orange-50 border-orange-500' :
+              nextAction.urgency === 'medium' ? 'bg-yellow-50 border-yellow-500' :
+              'bg-blue-50 border-blue-500'
+            }`}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  {/* Icon */}
+                  <div className={`p-3 rounded-full ${
+                    nextAction.urgency === 'critical' ? 'bg-red-100' :
+                    nextAction.urgency === 'high' ? 'bg-orange-100' :
+                    nextAction.urgency === 'medium' ? 'bg-yellow-100' :
+                    'bg-blue-100'
+                  }`}>
+                    {nextAction.urgency === 'critical' ? (
+                      <AlertCircle className="w-6 h-6 text-red-600" />
+                    ) : nextAction.urgency === 'high' ? (
+                      <Zap className="w-6 h-6 text-orange-600" />
+                    ) : nextAction.urgency === 'medium' ? (
+                      <TrendingUp className="w-6 h-6 text-yellow-600" />
+                    ) : (
+                      <CheckCircle className="w-6 h-6 text-blue-600" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-lg font-bold text-gray-900">{nextAction.title}</h3>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
+                        nextAction.urgency === 'critical' ? 'bg-red-200 text-red-800' :
+                        nextAction.urgency === 'high' ? 'bg-orange-200 text-orange-800' :
+                        nextAction.urgency === 'medium' ? 'bg-yellow-200 text-yellow-800' :
+                        'bg-blue-200 text-blue-800'
+                      }`}>
+                        {nextAction.urgency}
+                      </span>
+                    </div>
+
+                    <p className="text-gray-700 mb-3">{nextAction.description}</p>
+
+                    {nextAction.reason && (
+                      <div className="mb-3 p-3 bg-white/50 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          <strong>Why:</strong> {nextAction.reason}
+                        </p>
+                      </div>
+                    )}
+
+                    {nextAction.expected_impact && (
+                      <div className="mb-4 p-3 bg-white/50 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          <strong>Expected Impact:</strong> {nextAction.expected_impact}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Artist Info */}
+                    <p className="text-sm text-gray-500 mb-4">
+                      For: <strong>{nextAction.artist_name}</strong>
+                    </p>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() => handleActionClick(nextAction.artist_id)}
+                      className={`inline-flex items-center px-6 py-3 rounded-lg font-semibold transition-colors ${
+                        nextAction.urgency === 'critical' ? 'bg-red-600 hover:bg-red-700 text-white' :
+                        nextAction.urgency === 'high' ? 'bg-orange-600 hover:bg-orange-700 text-white' :
+                        nextAction.urgency === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700 text-white' :
+                        'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      Take Action →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Quick Actions */}

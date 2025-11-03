@@ -8,6 +8,7 @@ from app.models.alert_rule import AlertRule, AlertRuleType, Notification
 from app.models.platform import PlatformConnection, PlatformType
 from app.models.stream_history import StreamHistory
 from app.models.social_post import SocialPost
+from app.models.action import NextBestAction, ActionUrgency, ActionStatus
 
 __all__ = [
     "User",
@@ -22,4 +23,7 @@ __all__ = [
     "PlatformType",
     "StreamHistory",
     "SocialPost",
+    "NextBestAction",
+    "ActionUrgency",
+    "ActionStatus",
 ]
