@@ -1,12 +1,47 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
 import Alert from '@/components/ui/Alert'
+import { api } from '@/lib/api'
+import { Music } from 'lucide-react'
+
+interface Artist {
+  id: string
+  name: string
+  genre: string | null
+  spotify_id: string | null
+  instagram_id: string | null
+  youtube_id: string | null
+  image_url: string | null
+  created_at: string
+}
 
 export default function DashboardPage() {
   const { user } = useAuthStore()
+  const [artists, setArtists] = useState<Artist[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchArtists()
+  }, [])
+
+  const fetchArtists = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/api/artists/')
+      setArtists(response.data)
+      setError(null)
+    } catch (err: any) {
+      console.error('Failed to fetch artists:', err)
+      setError('Failed to load artists')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <ProtectedRoute>
@@ -30,6 +65,13 @@ export default function DashboardPage() {
             </Alert>
           )}
 
+          {/* Error Alert */}
+          {error && (
+            <Alert type="error" title="Error">
+              {error}
+            </Alert>
+          )}
+
           {/* Quick Actions */}
           <div className="flex justify-end">
             <a
@@ -43,12 +85,22 @@ export default function DashboardPage() {
             </a>
           </div>
 
-          {/* Quick Stats Placeholder */}
+          {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-sm font-medium text-gray-500">Total Artists</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900">0</p>
-              <p className="mt-2 text-sm text-gray-600">No artists added yet</p>
+              {loading ? (
+                <div className="mt-2 animate-pulse">
+                  <div className="h-9 bg-gray-200 rounded w-16"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="mt-2 text-3xl font-bold text-gray-900">{artists.length}</p>
+                  <p className="mt-2 text-sm text-gray-600">
+                    {artists.length === 0 ? 'No artists added yet' : `${artists.length} artist${artists.length > 1 ? 's' : ''} tracked`}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow">
@@ -63,6 +115,54 @@ export default function DashboardPage() {
               <p className="mt-2 text-sm text-gray-600">Data available after setup</p>
             </div>
           </div>
+
+          {/* Artists List */}
+          {!loading && artists.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Your Artists
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {artists.map((artist) => (
+                  <div
+                    key={artist.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center gap-3">
+                      {artist.image_url ? (
+                        <img
+                          src={artist.image_url}
+                          alt={artist.name}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center">
+                          <Music className="w-8 h-8 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-gray-900 truncate">{artist.name}</h4>
+                        {artist.genre && (
+                          <p className="text-sm text-gray-600 truncate">{artist.genre}</p>
+                        )}
+                        <div className="flex gap-2 mt-1">
+                          {artist.spotify_id && (
+                            <span className="text-xs text-green-600">Spotify</span>
+                          )}
+                          {artist.instagram_id && (
+                            <span className="text-xs text-pink-600">Instagram</span>
+                          )}
+                          {artist.youtube_id && (
+                            <span className="text-xs text-red-600">YouTube</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Getting Started */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
