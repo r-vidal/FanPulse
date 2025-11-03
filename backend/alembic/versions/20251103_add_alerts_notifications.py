@@ -1,7 +1,7 @@
 """Add alerts and notifications
 
 Revision ID: 002_alerts_notifications
-Revises: 001_platform_models
+Revises: 001a_fix_alerts
 Create Date: 2025-11-03
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '002_alerts_notifications'
-down_revision = '001_platform_models'
+down_revision = '001a_fix_alerts'
 branch_labels = None
 depends_on = None
 
