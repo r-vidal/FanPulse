@@ -231,13 +231,53 @@ class ReportGenerator:
         self, artist_id: str, start_date: datetime, end_date: datetime
     ) -> Dict:
         """Get streaming statistics"""
-        history = self.db.query(StreamHistory).filter(
-            StreamHistory.artist_id == artist_id,
-            StreamHistory.date >= start_date,
-            StreamHistory.date <= end_date,
-        ).order_by(StreamHistory.date).all()
+        try:
+            history = self.db.query(StreamHistory).filter(
+                StreamHistory.artist_id == artist_id,
+                StreamHistory.date >= start_date,
+                StreamHistory.date <= end_date,
+            ).order_by(StreamHistory.date).all()
 
-        if not history:
+            if not history:
+                return {
+                    "total_streams": 0,
+                    "avg_daily_streams": 0,
+                    "growth_rate": 0,
+                    "trend": "stable",
+                    "timeline": [],
+                }
+
+            total_streams = sum(h.total_streams for h in history)
+            avg_daily = total_streams / len(history) if history else 0
+
+            # Calculate growth rate
+            if len(history) >= 2:
+                first_week = sum(h.total_streams for h in history[:7])
+                last_week = sum(h.total_streams for h in history[-7:])
+                growth_rate = ((last_week - first_week) / first_week * 100) if first_week > 0 else 0
+            else:
+                growth_rate = 0
+
+            # Determine trend
+            if growth_rate > 10:
+                trend = "growing"
+            elif growth_rate < -10:
+                trend = "declining"
+            else:
+                trend = "stable"
+
+            return {
+                "total_streams": total_streams,
+                "avg_daily_streams": int(avg_daily),
+                "growth_rate": round(growth_rate, 1),
+                "trend": trend,
+                "timeline": [
+                    {"date": h.date, "streams": h.total_streams}
+                    for h in history
+                ],
+            }
+        except Exception as e:
+            logger.warning(f"Failed to fetch streaming data: {e}")
             return {
                 "total_streams": 0,
                 "avg_daily_streams": 0,
@@ -246,77 +286,55 @@ class ReportGenerator:
                 "timeline": [],
             }
 
-        total_streams = sum(h.total_streams for h in history)
-        avg_daily = total_streams / len(history) if history else 0
-
-        # Calculate growth rate
-        if len(history) >= 2:
-            first_week = sum(h.total_streams for h in history[:7])
-            last_week = sum(h.total_streams for h in history[-7:])
-            growth_rate = ((last_week - first_week) / first_week * 100) if first_week > 0 else 0
-        else:
-            growth_rate = 0
-
-        # Determine trend
-        if growth_rate > 10:
-            trend = "growing"
-        elif growth_rate < -10:
-            trend = "declining"
-        else:
-            trend = "stable"
-
-        return {
-            "total_streams": total_streams,
-            "avg_daily_streams": int(avg_daily),
-            "growth_rate": round(growth_rate, 1),
-            "trend": trend,
-            "timeline": [
-                {"date": h.date, "streams": h.total_streams}
-                for h in history
-            ],
-        }
-
     def _get_momentum_data(self, artist_id: str) -> Dict:
         """Get latest momentum score"""
-        momentum = self.db.query(MomentumScore).filter(
-            MomentumScore.artist_id == artist_id
-        ).order_by(MomentumScore.calculated_at.desc()).first()
+        try:
+            momentum = self.db.query(MomentumScore).filter(
+                MomentumScore.artist_id == artist_id
+            ).order_by(MomentumScore.calculated_at.desc()).first()
 
-        if not momentum:
-            return {"score": 5.0, "category": "Steady", "insights": []}
+            if not momentum:
+                return {"score": 5.0, "category": "Steady", "velocity": 5.0, "consistency": 5.0, "insights": []}
 
-        return {
-            "score": momentum.overall_score,
-            "category": momentum.momentum_category,
-            "velocity": momentum.velocity_score,
-            "consistency": momentum.consistency_score,
-            "insights": momentum.key_insights or [],
-        }
+            return {
+                "score": momentum.overall_score,
+                "category": momentum.momentum_category,
+                "velocity": momentum.velocity_score,
+                "consistency": momentum.consistency_score,
+                "insights": momentum.key_insights or [],
+            }
+        except Exception as e:
+            logger.warning(f"Failed to fetch momentum data: {e}")
+            return {"score": 5.0, "category": "Steady", "velocity": 5.0, "consistency": 5.0, "insights": []}
 
     def _get_revenue_forecast(self, artist_id: str) -> Dict:
         """Get revenue forecast data"""
-        forecasts = self.db.query(RevenueForecast).filter(
-            RevenueForecast.artist_id == artist_id,
-            RevenueForecast.scenario == ForecastScenario.REALISTIC,
-        ).order_by(RevenueForecast.forecast_month).limit(6).all()
+        try:
+            forecasts = self.db.query(RevenueForecast).filter(
+                RevenueForecast.artist_id == artist_id,
+                RevenueForecast.scenario == ForecastScenario.REALISTIC,
+            ).order_by(RevenueForecast.forecast_month).limit(6).all()
 
-        if not forecasts:
+            if not forecasts:
+                return {"total_forecast": 0, "monthly": []}
+
+            total = sum(f.total_revenue for f in forecasts)
+
+            return {
+                "total_forecast": round(total, 2),
+                "monthly": [
+                    {
+                        "month": f.forecast_month,
+                        "revenue": f.total_revenue,
+                        "streaming": f.streaming_revenue,
+                        "concerts": f.concert_revenue,
+                    }
+                    for f in forecasts
+                ],
+            }
+        except Exception as e:
+            logger.warning(f"Failed to fetch revenue forecast: {e}")
             return {"total_forecast": 0, "monthly": []}
-
-        total = sum(f.total_revenue for f in forecasts)
-
-        return {
-            "total_forecast": round(total, 2),
-            "monthly": [
-                {
-                    "month": f.forecast_month,
-                    "revenue": f.total_revenue,
-                    "streaming": f.streaming_revenue,
-                    "concerts": f.concert_revenue,
-                }
-                for f in forecasts
-            ],
-        }
 
     def _get_social_stats(self, artist: Artist) -> Dict:
         """Get social media statistics"""
