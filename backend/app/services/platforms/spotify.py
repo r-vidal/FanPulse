@@ -213,12 +213,43 @@ class SpotifyService(PlatformServiceBase):
             },
         }
 
-    async def search_artist(self, query: str, access_token: str) -> List[Dict[str, Any]]:
+    async def get_client_credentials_token(self) -> str:
+        """
+        Get access token using Client Credentials flow (no user auth needed)
+        Used for public API endpoints like search
+        """
+        auth_str = f"{self.client_id}:{self.client_secret}"
+        auth_bytes = auth_str.encode("utf-8")
+        auth_b64 = base64.b64encode(auth_bytes).decode("utf-8")
+
+        headers = {
+            "Authorization": f"Basic {auth_b64}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        data = {
+            "grant_type": "client_credentials",
+        }
+
+        response = await self.make_request(
+            method="POST",
+            url="https://accounts.spotify.com/api/token",
+            headers=headers,
+            json=data,
+        )
+
+        return response["access_token"]
+
+    async def search_artist(self, query: str, access_token: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Search for artists by name
 
         Useful for connecting an artist to their Spotify profile
+        If no access_token provided, will use client credentials
         """
+        if not access_token:
+            access_token = await self.get_client_credentials_token()
+
         headers = {"Authorization": f"Bearer {access_token}"}
 
         response = await self.make_request(
