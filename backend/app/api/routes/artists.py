@@ -190,17 +190,25 @@ async def import_spotify_artist(
 
     The spotify_id should come from the search results
     """
-    # Check if artist already exists for this user
+    # Check if artist already exists globally (spotify_id is unique across the system)
     existing_artist = db.query(Artist).filter(
-        Artist.user_id == current_user.id,
         Artist.spotify_id == import_data.spotify_id
     ).first()
 
     if existing_artist:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This artist is already added to your account"
-        )
+        # Check if it belongs to the current user
+        if existing_artist.user_id == current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This artist is already added to your account"
+            )
+        else:
+            # Artist exists but belongs to another user
+            # This is a limitation of the current single-tenant artist model
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Artist '{existing_artist.name}' is already being tracked by another user in the system. Due to current system limitations, each Spotify artist can only be tracked by one user. This will be addressed in a future update to support multi-tenant artist tracking."
+            )
 
     spotify = SpotifyService()
 
