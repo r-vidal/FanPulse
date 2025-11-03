@@ -118,7 +118,9 @@ async def delete_artist(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Delete an artist"""
+    """Delete an artist and all related records"""
+    from app.models.stream_history import StreamHistory
+
     artist = db.query(Artist).filter(
         Artist.id == artist_id,
         Artist.user_id == current_user.id
@@ -130,9 +132,23 @@ async def delete_artist(
             detail="Artist not found"
         )
 
-    db.delete(artist)
-    db.commit()
-    return None
+    try:
+        # Manually delete stream_history first to avoid FK constraint issues
+        # (stream_history has FKs to both artist and platform_connection)
+        db.query(StreamHistory).filter(
+            StreamHistory.artist_id == artist_id
+        ).delete(synchronize_session=False)
+
+        # Now delete the artist (will cascade to platform_connections and other related records)
+        db.delete(artist)
+        db.commit()
+        return None
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete artist: {str(e)}"
+        )
 
 
 @router.get("/search/spotify", response_model=List[SpotifyArtistSearchResult])
