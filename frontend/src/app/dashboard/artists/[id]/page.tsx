@@ -81,6 +81,18 @@ export default function ArtistDetailPage() {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/spotify/authorize`
   }
 
+  const captureSnapshot = async () => {
+    if (!artist) return
+
+    try {
+      await api.post(`/api/stream-history/capture/${artist.id}`)
+      alert('✅ Snapshot captured successfully! Historical data saved.')
+    } catch (err: any) {
+      console.error('Failed to capture snapshot:', err)
+      alert('Failed to capture snapshot. Please try again.')
+    }
+  }
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -193,7 +205,7 @@ export default function ArtistDetailPage() {
                 </div>
 
                 {/* Added Date */}
-                <div className="flex items-center text-sm text-gray-500">
+                <div className="flex items-center text-sm text-gray-500 mb-4">
                   <Calendar className="w-4 h-4 mr-2" />
                   Added on {new Date(artist.created_at).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -201,6 +213,19 @@ export default function ArtistDetailPage() {
                     day: 'numeric'
                   })}
                 </div>
+
+                {/* Capture Snapshot Button */}
+                {artist.spotify_id && (
+                  <button
+                    onClick={captureSnapshot}
+                    className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    Capture Data Snapshot
+                  </button>
+                )}
               </div>
             </div>
           </div>
