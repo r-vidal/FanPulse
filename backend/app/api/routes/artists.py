@@ -201,7 +201,8 @@ async def import_spotify_artist(
         )
 
         # Determine genre (take first genre if available)
-        genre = artist_data.get("genres", [None])[0]
+        genres = artist_data.get("genres", [])
+        genre = genres[0] if genres else None
 
         # Get best quality image
         images = artist_data.get("images", [])
