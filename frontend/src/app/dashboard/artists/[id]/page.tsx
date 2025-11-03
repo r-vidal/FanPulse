@@ -30,13 +30,31 @@ interface ArtistStats {
   }>
 }
 
+interface Momentum {
+  score: number
+  status: string
+  signals: {
+    popularity: number
+    follower_growth: number
+    top_tracks: number
+  }
+  trend_7d: number | null
+  trend_30d: number | null
+  data_points: {
+    '7d': number
+    '30d': number
+  }
+}
+
 export default function ArtistDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [artist, setArtist] = useState<Artist | null>(null)
   const [stats, setStats] = useState<ArtistStats | null>(null)
+  const [momentum, setMomentum] = useState<Momentum | null>(null)
   const [loading, setLoading] = useState(true)
   const [statsLoading, setStatsLoading] = useState(false)
+  const [momentumLoading, setMomentumLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -52,9 +70,10 @@ export default function ArtistDetailPage() {
       setArtist(response.data)
       setError(null)
 
-      // If artist has Spotify ID, fetch stats
+      // If artist has Spotify ID, fetch stats and momentum
       if (response.data.spotify_id) {
         fetchStats(artistId)
+        fetchMomentum(artistId)
       }
     } catch (err: any) {
       console.error('Failed to fetch artist:', err)
@@ -74,6 +93,19 @@ export default function ArtistDetailPage() {
       // Don't show error for stats, just keep them empty
     } finally {
       setStatsLoading(false)
+    }
+  }
+
+  const fetchMomentum = async (artistId: string) => {
+    try {
+      setMomentumLoading(true)
+      const response = await api.get(`/api/momentum/${artistId}`)
+      setMomentum(response.data)
+    } catch (err: any) {
+      console.error('Failed to fetch momentum:', err)
+      // Don't show error for momentum, just keep it empty
+    } finally {
+      setMomentumLoading(false)
     }
   }
 
@@ -229,6 +261,162 @@ export default function ArtistDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Momentum Index */}
+          {artist.spotify_id && (
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg shadow-lg p-8 border border-purple-200">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <TrendingUp className="w-7 h-7 mr-3 text-purple-600" />
+                Momentum Index
+              </h2>
+
+              {momentumLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600"></div>
+                </div>
+              ) : momentum ? (
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Gauge & Score */}
+                  <div className="flex flex-col items-center justify-center">
+                    {/* Circular Gauge */}
+                    <div className="relative w-48 h-48 mb-4">
+                      <svg className="w-full h-full transform -rotate-90">
+                        {/* Background circle */}
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="80"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="16"
+                        />
+                        {/* Progress circle */}
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="80"
+                          fill="none"
+                          stroke={
+                            momentum.status === 'fire' ? '#ef4444' :
+                            momentum.status === 'growing' ? '#10b981' :
+                            momentum.status === 'stable' ? '#f59e0b' :
+                            '#6b7280'
+                          }
+                          strokeWidth="16"
+                          strokeDasharray={`${(momentum.score / 10) * 502.4} 502.4`}
+                          strokeLinecap="round"
+                          className="transition-all duration-1000 ease-out"
+                        />
+                      </svg>
+                      {/* Score in center */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-5xl font-bold text-gray-900">
+                          {momentum.score.toFixed(1)}
+                        </span>
+                        <span className="text-sm text-gray-500 mt-1">/ 10</span>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className={`px-6 py-3 rounded-full text-lg font-bold ${
+                      momentum.status === 'fire' ? 'bg-red-100 text-red-700' :
+                      momentum.status === 'growing' ? 'bg-green-100 text-green-700' :
+                      momentum.status === 'stable' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {momentum.status === 'fire' && '🔥 Fire'}
+                      {momentum.status === 'growing' && '📈 Growing'}
+                      {momentum.status === 'stable' && '➡️ Stable'}
+                      {momentum.status === 'declining' && '📉 Declining'}
+                    </div>
+
+                    {/* Trends */}
+                    {(momentum.trend_7d !== null || momentum.trend_30d !== null) && (
+                      <div className="mt-6 space-y-2 w-full">
+                        {momentum.trend_7d !== null && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">7-day trend:</span>
+                            <span className={`font-semibold ${momentum.trend_7d >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {momentum.trend_7d >= 0 ? '+' : ''}{momentum.trend_7d.toFixed(1)}%
+                            </span>
+                          </div>
+                        )}
+                        {momentum.trend_30d !== null && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">30-day trend:</span>
+                            <span className={`font-semibold ${momentum.trend_30d >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {momentum.trend_30d >= 0 ? '+' : ''}{momentum.trend_30d.toFixed(1)}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Signals Breakdown */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Signal Breakdown</h3>
+                    <div className="space-y-4">
+                      {/* Popularity */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">Popularity</span>
+                          <span className="text-sm font-bold text-purple-600">{momentum.signals.popularity.toFixed(1)}/10</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="bg-purple-600 h-3 rounded-full transition-all duration-500"
+                            style={{ width: `${(momentum.signals.popularity / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {/* Follower Growth */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">Follower Growth</span>
+                          <span className="text-sm font-bold text-blue-600">{momentum.signals.follower_growth.toFixed(1)}/10</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                            style={{ width: `${(momentum.signals.follower_growth / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {/* Top Tracks */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">Top Tracks Performance</span>
+                          <span className="text-sm font-bold text-green-600">{momentum.signals.top_tracks.toFixed(1)}/10</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="bg-green-600 h-3 rounded-full transition-all duration-500"
+                            style={{ width: `${(momentum.signals.top_tracks / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Data Points Info */}
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-xs text-blue-800">
+                        <strong>ℹ️ Calculation:</strong> Based on {momentum.data_points['30d']} historical data points.
+                        {momentum.data_points['30d'] < 7 && ' Capture more snapshots for better accuracy!'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 mb-4">No momentum data available yet.</p>
+                  <p className="text-sm text-gray-500">Capture a data snapshot to start tracking momentum!</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

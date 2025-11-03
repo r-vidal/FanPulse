@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health, artists, auth, platforms, analytics, alerts, spotify_auth, stream_history
+from app.api.routes import health, artists, auth, platforms, analytics, alerts, spotify_auth, stream_history, momentum
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -27,6 +27,7 @@ app.include_router(analytics.router, prefix="/api", tags=["analytics"])
 app.include_router(alerts.router, prefix="/api", tags=["alerts"])
 app.include_router(spotify_auth.router, prefix="/api/spotify", tags=["spotify-auth"])
 app.include_router(stream_history.router, prefix="/api/stream-history", tags=["stream-history"])
+app.include_router(momentum.router, prefix="/api/momentum", tags=["momentum"])
 
 
 @app.get("/")
