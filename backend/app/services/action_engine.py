@@ -127,7 +127,8 @@ class ActionEngine:
                 urgency=ActionUrgency.HIGH,
                 reason="No historical data found. Without data, we cannot calculate momentum or trends.",
                 expected_impact="Unlock momentum index, trend analysis, and growth tracking for this artist.",
-                status=ActionStatus.PENDING
+                status=ActionStatus.PENDING,
+                created_at=datetime.utcnow()
             )]
         return []
 
@@ -148,7 +149,8 @@ class ActionEngine:
                 urgency=ActionUrgency.MEDIUM,
                 reason=f"Only {len(history)} data points available. More data = better insights.",
                 expected_impact="More accurate momentum scores and trend predictions.",
-                status=ActionStatus.PENDING
+                status=ActionStatus.PENDING,
+                created_at=datetime.utcnow()
             )]
         return []
 
@@ -169,7 +171,8 @@ class ActionEngine:
                 urgency=ActionUrgency.HIGH,
                 reason=f"Momentum score dropped to {momentum['score']}/10. Trend: {momentum.get('trend_30d', 0):.1f}%",
                 expected_impact="Identify causes of decline and implement recovery strategies.",
-                status=ActionStatus.PENDING
+                status=ActionStatus.PENDING,
+                created_at=datetime.utcnow()
             )]
         return []
 
@@ -190,7 +193,8 @@ class ActionEngine:
                 urgency=ActionUrgency.CRITICAL,
                 reason=f"Momentum score at {momentum['score']}/10. Strike while hot!",
                 expected_impact="Maximize growth during peak momentum window. 2-3x potential reach.",
-                status=ActionStatus.PENDING
+                status=ActionStatus.PENDING,
+                created_at=datetime.utcnow()
             )]
         return []
 
@@ -214,7 +218,8 @@ class ActionEngine:
                 urgency=ActionUrgency.MEDIUM,
                 reason="Stale data leads to inaccurate momentum calculations.",
                 expected_impact="Keep momentum tracking current and accurate.",
-                status=ActionStatus.PENDING
+                status=ActionStatus.PENDING,
+                created_at=datetime.utcnow()
             )]
         return []
 
@@ -235,6 +240,7 @@ class ActionEngine:
                 urgency=ActionUrgency.LOW,
                 reason="High-value artist data should be backed up regularly.",
                 expected_impact="Secure historical data for long-term analysis.",
-                status=ActionStatus.PENDING
+                status=ActionStatus.PENDING,
+                created_at=datetime.utcnow()
             )]
         return []
