@@ -79,9 +79,13 @@ async def get_dashboard_stats(
 
     # Total streams - sum from latest momentum scores
     total_streams = 0
-    momentum_scores = db.query(MomentumScore).filter(
-        MomentumScore.artist_id.in_(artist_ids)
-    ).all()
+    momentum_scores = []
+    try:
+        momentum_scores = db.query(MomentumScore).filter(
+            MomentumScore.artist_id.in_(artist_ids)
+        ).all()
+    except Exception as e:
+        logger.warning(f"Could not query momentum_scores: {e}")
 
     # For each artist, get their latest stream count
     for artist_id in artist_ids:
@@ -96,15 +100,18 @@ async def get_dashboard_stats(
                     total_streams += int(signals.get('total_streams', 0))
 
     # Average momentum score
-    recent_momentum = db.query(MomentumScore).filter(
-        MomentumScore.artist_id.in_(artist_ids),
-        MomentumScore.calculated_at >= datetime.utcnow() - timedelta(days=7)
-    ).all()
+    avg_momentum = 0.0
+    try:
+        recent_momentum = db.query(MomentumScore).filter(
+            MomentumScore.artist_id.in_(artist_ids),
+            MomentumScore.calculated_at >= datetime.utcnow() - timedelta(days=7)
+        ).all()
 
-    if recent_momentum:
-        avg_momentum = sum(m.score for m in recent_momentum) / len(recent_momentum)
-    else:
-        avg_momentum = 0.0
+        if recent_momentum:
+            # Use overall_score not score
+            avg_momentum = sum(m.overall_score for m in recent_momentum) / len(recent_momentum)
+    except Exception as e:
+        logger.warning(f"Could not calculate avg momentum: {e}")
 
     # Count by status
     latest_momentum_by_artist = {}
@@ -116,38 +123,60 @@ async def get_dashboard_stats(
                 key=lambda x: x.calculated_at
             )
 
-    artists_growing = sum(
-        1 for m in latest_momentum_by_artist.values()
-        if m.status in ['fire', 'growing']
-    )
-    artists_declining = sum(
-        1 for m in latest_momentum_by_artist.values()
-        if m.status == 'declining'
-    )
+    artists_growing = 0
+    artists_declining = 0
+    try:
+        # Use momentum_category not status
+        artists_growing = sum(
+            1 for m in latest_momentum_by_artist.values()
+            if m.momentum_category and m.momentum_category.lower() in ['fire', 'growing', 'rising']
+        )
+        artists_declining = sum(
+            1 for m in latest_momentum_by_artist.values()
+            if m.momentum_category and m.momentum_category.lower() in ['declining', 'falling']
+        )
+    except Exception as e:
+        logger.warning(f"Could not count artist status: {e}")
 
     # Total superfans
-    total_superfans = db.query(func.count(Superfan.id)).filter(
-        Superfan.artist_id.in_(artist_ids)
-    ).scalar() or 0
+    total_superfans = 0
+    try:
+        total_superfans = db.query(func.count(Superfan.id)).filter(
+            Superfan.artist_id.in_(artist_ids)
+        ).scalar() or 0
+    except Exception as e:
+        logger.warning(f"Could not count superfans: {e}")
 
     # Pending actions
-    pending_actions = db.query(func.count(NextBestAction.id)).filter(
-        NextBestAction.artist_id.in_(artist_ids),
-        NextBestAction.status == ActionStatus.PENDING
-    ).scalar() or 0
+    pending_actions = 0
+    try:
+        pending_actions = db.query(func.count(NextBestAction.id)).filter(
+            NextBestAction.artist_id.in_(artist_ids),
+            NextBestAction.status == ActionStatus.PENDING
+        ).scalar() or 0
+    except Exception as e:
+        logger.warning(f"Could not count pending actions: {e}")
 
     # Critical actions
-    critical_actions = db.query(func.count(NextBestAction.id)).filter(
-        NextBestAction.artist_id.in_(artist_ids),
-        NextBestAction.status == ActionStatus.PENDING,
-        NextBestAction.urgency == 'critical'
-    ).scalar() or 0
+    critical_actions = 0
+    try:
+        critical_actions = db.query(func.count(NextBestAction.id)).filter(
+            NextBestAction.artist_id.in_(artist_ids),
+            NextBestAction.status == ActionStatus.PENDING,
+            NextBestAction.urgency == 'critical'
+        ).scalar() or 0
+    except Exception as e:
+        logger.warning(f"Could not count critical actions: {e}")
 
     # Recent alerts (last 7 days)
-    recent_alerts = db.query(func.count(Alert.id)).filter(
-        Alert.artist_id.in_(artist_ids),
-        Alert.created_at >= datetime.utcnow() - timedelta(days=7)
-    ).scalar() or 0
+    recent_alerts = 0
+    try:
+        recent_alerts = db.query(func.count(Alert.id)).filter(
+            Alert.artist_id.in_(artist_ids),
+            Alert.created_at >= datetime.utcnow() - timedelta(days=7)
+        ).scalar() or 0
+    except Exception as e:
+        logger.warning(f"Could not count recent alerts: {e}")
 
     return DashboardStats(
         total_artists=len(artists),
@@ -179,19 +208,24 @@ async def get_top_performers(
 
     # Get latest momentum score for each artist
     latest_momentum = []
-    for artist in artists:
-        momentum = db.query(MomentumScore).filter(
-            MomentumScore.artist_id == artist.id
-        ).order_by(MomentumScore.calculated_at.desc()).first()
+    try:
+        for artist in artists:
+            momentum = db.query(MomentumScore).filter(
+                MomentumScore.artist_id == artist.id
+            ).order_by(MomentumScore.calculated_at.desc()).first()
 
-        if momentum:
-            latest_momentum.append({
-                'artist': artist,
-                'momentum': momentum
-            })
+            if momentum:
+                latest_momentum.append({
+                    'artist': artist,
+                    'momentum': momentum
+                })
+    except Exception as e:
+        logger.warning(f"Could not query momentum scores: {e}")
+        return []
 
-    # Sort by momentum score
-    latest_momentum.sort(key=lambda x: x['momentum'].score, reverse=True)
+    # Sort by momentum score (use overall_score not score)
+    if latest_momentum:
+        latest_momentum.sort(key=lambda x: x['momentum'].overall_score, reverse=True)
 
     # Return top performers
     result = []
@@ -199,13 +233,14 @@ async def get_top_performers(
         artist = item['artist']
         momentum = item['momentum']
 
+        # Use overall_score, momentum_category, and calculate trend manually
         result.append(TopArtist(
             id=str(artist.id),
             name=artist.name,
             image_url=artist.image_url,
-            momentum_score=momentum.score,
-            momentum_status=momentum.status,
-            trend_7d=momentum.trend_7d
+            momentum_score=momentum.overall_score,
+            momentum_status=momentum.momentum_category or 'steady',
+            trend_7d=None  # MomentumScore model doesn't have trend_7d field
         ))
 
     return result
@@ -232,10 +267,14 @@ async def get_recent_activity(
     activities = []
 
     # Get recent alerts
-    recent_alerts = db.query(Alert).filter(
-        Alert.artist_id.in_(artist_ids),
-        Alert.created_at >= datetime.utcnow() - timedelta(days=7)
-    ).order_by(Alert.created_at.desc()).limit(5).all()
+    recent_alerts = []
+    try:
+        recent_alerts = db.query(Alert).filter(
+            Alert.artist_id.in_(artist_ids),
+            Alert.created_at >= datetime.utcnow() - timedelta(days=7)
+        ).order_by(Alert.created_at.desc()).limit(5).all()
+    except Exception as e:
+        logger.warning(f"Could not query alerts: {e}")
 
     for alert in recent_alerts:
         artist = artist_lookup.get(str(alert.artist_id))
@@ -260,11 +299,15 @@ async def get_recent_activity(
             ))
 
     # Get recent completed actions
-    recent_actions = db.query(NextBestAction).filter(
-        NextBestAction.artist_id.in_(artist_ids),
-        NextBestAction.status.in_([ActionStatus.COMPLETED, ActionStatus.PENDING]),
-        NextBestAction.created_at >= datetime.utcnow() - timedelta(days=7)
-    ).order_by(NextBestAction.created_at.desc()).limit(5).all()
+    recent_actions = []
+    try:
+        recent_actions = db.query(NextBestAction).filter(
+            NextBestAction.artist_id.in_(artist_ids),
+            NextBestAction.status.in_([ActionStatus.COMPLETED, ActionStatus.PENDING]),
+            NextBestAction.created_at >= datetime.utcnow() - timedelta(days=7)
+        ).order_by(NextBestAction.created_at.desc()).limit(5).all()
+    except Exception as e:
+        logger.warning(f"Could not query actions: {e}")
 
     for action in recent_actions:
         artist = artist_lookup.get(str(action.artist_id))
