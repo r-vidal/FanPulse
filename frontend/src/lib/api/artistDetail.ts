@@ -23,7 +23,16 @@ export interface ArtistStats {
 export interface MomentumDataPoint {
   date: string
   score: number
-  category: string
+  status: 'fire' | 'growing' | 'stable' | 'declining'
+}
+
+export interface TopTrack {
+  id: string
+  name: string
+  streams: number
+  spotify_url?: string
+  preview_url?: string
+  image_url?: string
 }
 
 export const artistDetailApi = {
@@ -31,7 +40,7 @@ export const artistDetailApi = {
    * Get aggregated statistics for a specific artist
    */
   getStats: async (artistId: string): Promise<ArtistStats> => {
-    const response = await api.get(`/api/artists/${artistId}/stats`)
+    const response = await api.get(`/api/artist-detail/${artistId}/stats`)
     return response.data
   },
 
@@ -39,8 +48,18 @@ export const artistDetailApi = {
    * Get momentum score history for charting
    */
   getMomentumHistory: async (artistId: string, days: number = 90): Promise<MomentumDataPoint[]> => {
-    const response = await api.get(`/api/artists/${artistId}/momentum-history`, {
+    const response = await api.get(`/api/artist-detail/${artistId}/momentum-history`, {
       params: { days }
+    })
+    return response.data
+  },
+
+  /**
+   * Get top tracks for an artist
+   */
+  getTopTracks: async (artistId: string, limit: number = 10): Promise<TopTrack[]> => {
+    const response = await api.get(`/api/artist-detail/${artistId}/top-tracks`, {
+      params: { limit }
     })
     return response.data
   }

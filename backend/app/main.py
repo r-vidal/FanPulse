@@ -44,7 +44,7 @@ app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 app.include_router(realtime_alerts.router, prefix="/api/realtime-alerts", tags=["realtime-alerts"])
 app.include_router(websocket_alerts.router, prefix="/api", tags=["websocket"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
-app.include_router(artist_detail.router, prefix="/api/artists", tags=["artist-detail"])
+app.include_router(artist_detail.router, prefix="/api/artist-detail", tags=["artist-detail"])
 
 
 @app.get("/")

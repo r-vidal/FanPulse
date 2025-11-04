@@ -12,6 +12,7 @@ from app.models.momentum import MomentumScore
 from app.models.superfan import Superfan
 from app.models.action import NextBestAction, ActionStatus
 from app.models.alert import Alert
+from app.models.stream_history import StreamHistory
 from pydantic import BaseModel
 import logging
 
@@ -45,7 +46,17 @@ class MomentumDataPoint(BaseModel):
     """Single data point for momentum chart"""
     date: datetime
     score: float
-    category: str
+    status: str
+
+
+class TopTrack(BaseModel):
+    """Top track with streaming data"""
+    id: str
+    name: str
+    streams: int
+    spotify_url: Optional[str] = None
+    preview_url: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 @router.get("/{artist_id}/stats", response_model=ArtistStats)
@@ -202,9 +213,59 @@ async def get_momentum_history(
             data_points.append(MomentumDataPoint(
                 date=record.calculated_at,
                 score=record.overall_score,
-                category=record.momentum_category or 'steady'
+                status=record.momentum_category or 'steady'
             ))
     except Exception as e:
         logger.warning(f"Could not query momentum history: {e}")
 
     return data_points
+
+
+@router.get("/{artist_id}/top-tracks", response_model=List[TopTrack])
+async def get_top_tracks(
+    artist_id: str,
+    limit: int = 10,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get top tracks for an artist from most recent stream history"""
+    try:
+        artist_uuid = UUID(artist_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid artist ID format")
+
+    # Verify artist ownership
+    artist = db.query(Artist).filter(
+        Artist.id == artist_uuid,
+        Artist.user_id == current_user.id
+    ).first()
+
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    top_tracks = []
+
+    try:
+        # Get the most recent stream history with top_tracks data
+        recent_history = db.query(StreamHistory).filter(
+            StreamHistory.artist_id == artist_uuid,
+            StreamHistory.top_tracks.isnot(None)
+        ).order_by(desc(StreamHistory.timestamp)).first()
+
+        if recent_history and recent_history.top_tracks:
+            # Extract top tracks from JSONB
+            tracks_data = recent_history.top_tracks
+            if isinstance(tracks_data, list):
+                for track in tracks_data[:limit]:
+                    top_tracks.append(TopTrack(
+                        id=track.get('id', ''),
+                        name=track.get('name', 'Unknown Track'),
+                        streams=track.get('streams', 0),
+                        spotify_url=track.get('spotify_url'),
+                        preview_url=track.get('preview_url'),
+                        image_url=track.get('image_url')
+                    ))
+    except Exception as e:
+        logger.warning(f"Could not query top tracks: {e}")
+
+    return top_tracks

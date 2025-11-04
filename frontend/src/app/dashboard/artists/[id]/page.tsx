@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Alert from '@/components/ui/Alert'
-import { artistDetailApi, ArtistStats, MomentumDataPoint } from '@/lib/api/artistDetail'
+import { artistDetailApi, ArtistStats, MomentumDataPoint, TopTrack } from '@/lib/api/artistDetail'
 import { actionsApi, NextAction } from '@/lib/api/actions'
 import { superfansApi, Superfan } from '@/lib/api/superfans'
 import {
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { MomentumChart } from '@/components/charts/MomentumChart'
+import { AudioPlayer } from '@/components/player/AudioPlayer'
 
 export default function ArtistDetailPage() {
   const params = useParams()
@@ -25,6 +26,7 @@ export default function ArtistDetailPage() {
   const [momentumHistory, setMomentumHistory] = useState<MomentumDataPoint[]>([])
   const [actions, setActions] = useState<NextAction[]>([])
   const [superfans, setSuperfans] = useState<Superfan[]>([])
+  const [topTracks, setTopTracks] = useState<TopTrack[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,17 +39,19 @@ export default function ArtistDetailPage() {
   const fetchArtistData = async () => {
     try {
       setLoading(true)
-      const [statsData, historyData, actionsData, superfansData] = await Promise.all([
+      const [statsData, historyData, actionsData, superfansData, tracksData] = await Promise.all([
         artistDetailApi.getStats(artistId),
         artistDetailApi.getMomentumHistory(artistId, 90),
         actionsApi.getForArtist(artistId),
-        superfansApi.getForArtist(artistId).catch(() => [])
+        superfansApi.getForArtist(artistId).catch(() => []),
+        artistDetailApi.getTopTracks(artistId, 10).catch(() => [])
       ])
 
       setStats(statsData)
       setMomentumHistory(historyData)
       setActions(actionsData)
       setSuperfans(superfansData)
+      setTopTracks(tracksData)
       setError(null)
     } catch (err: any) {
       console.error('Failed to fetch artist data:', err)
@@ -405,6 +409,86 @@ export default function ArtistDetailPage() {
                   )}
                 </div>
                 <MomentumChart data={momentumHistory} height={350} />
+              </div>
+
+              {/* Top Tracks */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Top Tracks</h2>
+                    <p className="text-sm text-gray-600">Most streamed tracks from portfolio</p>
+                  </div>
+                </div>
+
+                {topTracks.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Music className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-2">No track data available</p>
+                    <p className="text-sm text-gray-500">Track data will appear as it's collected</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {topTracks.map((track, index) => (
+                      <div
+                        key={track.id}
+                        className="border border-gray-200 rounded-xl overflow-hidden"
+                      >
+                        <div className="flex items-center gap-4 p-4 bg-white">
+                          {/* Rank */}
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-sm">
+                            {index + 1}
+                          </div>
+
+                          {/* Track Image */}
+                          {track.image_url ? (
+                            <img
+                              src={track.image_url}
+                              alt={track.name}
+                              className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                              <Music className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )}
+
+                          {/* Track Info */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 truncate">{track.name}</h3>
+                            <p className="text-sm text-gray-600">
+                              {formatNumber(track.streams)} streams
+                            </p>
+                          </div>
+
+                          {/* Spotify Link */}
+                          {track.spotify_url && (
+                            <a
+                              href={track.spotify_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                              title="Open in Spotify"
+                            >
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                              </svg>
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Audio Player */}
+                        {track.preview_url && (
+                          <div className="px-4 pb-4">
+                            <AudioPlayer
+                              previewUrl={track.preview_url}
+                              trackName={track.name}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </>
           ) : (
