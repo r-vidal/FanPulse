@@ -18,8 +18,8 @@ docker compose up -d
 echo "⏳ Waiting for services to be ready..."
 sleep 10
 
-echo "📊 Running database migrations..."
-docker compose exec backend alembic upgrade head
+echo "📊 Database migrations will run automatically on backend startup..."
+echo "    (You can check logs with: docker compose logs -f backend)"
 
 echo ""
 echo "✅ Rebuild complete!"
