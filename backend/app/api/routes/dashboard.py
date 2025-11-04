@@ -240,12 +240,21 @@ async def get_recent_activity(
     for alert in recent_alerts:
         artist = artist_lookup.get(str(alert.artist_id))
         if artist:
+            # Create title from alert_type
+            alert_titles = {
+                'viral': 'Viral Spike Detected',
+                'engagement_drop': 'Engagement Drop Alert',
+                'opportunity': 'New Opportunity',
+                'threat': 'Potential Threat'
+            }
+            title = alert_titles.get(alert.alert_type.value if hasattr(alert.alert_type, 'value') else alert.alert_type, 'Alert')
+
             activities.append(RecentActivity(
                 type='alert',
                 artist_id=str(alert.artist_id),
                 artist_name=artist.name,
-                title=alert.title,
-                description=alert.description,
+                title=title,
+                description=alert.message,
                 timestamp=alert.created_at,
                 severity=alert.severity.value if hasattr(alert, 'severity') else None
             ))
@@ -267,7 +276,7 @@ async def get_recent_activity(
                 title=action.title,
                 description=action.description,
                 timestamp=action.created_at,
-                severity=action.urgency if hasattr(action, 'urgency') else None
+                severity=action.urgency.value if hasattr(action.urgency, 'value') else str(action.urgency)
             ))
 
     # Sort all activities by timestamp
