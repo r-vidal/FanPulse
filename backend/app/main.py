@@ -5,7 +5,7 @@ from app.api.routes import (
     health, artists, auth, platforms, analytics, alerts,
     spotify_auth, instagram_auth, tiktok_auth, youtube_auth,
     stream_history, momentum, actions, releases, revenue, api_keys, reports,
-    websocket_alerts, realtime_alerts
+    websocket_alerts, realtime_alerts, dashboard
 )
 
 app = FastAPI(
@@ -43,6 +43,7 @@ app.include_router(api_keys.router, prefix="/api/api-keys", tags=["api-keys"])
 app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 app.include_router(realtime_alerts.router, prefix="/api/realtime-alerts", tags=["realtime-alerts"])
 app.include_router(websocket_alerts.router, prefix="/api", tags=["websocket"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 
 
 @app.get("/")

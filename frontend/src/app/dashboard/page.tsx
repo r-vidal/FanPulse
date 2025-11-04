@@ -5,131 +5,110 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
 import Alert from '@/components/ui/Alert'
-import { api } from '@/lib/api'
-import { Music, Trash2, Download, Zap, AlertCircle, TrendingUp, CheckCircle } from 'lucide-react'
-
-interface Artist {
-  id: string
-  name: string
-  genre: string | null
-  spotify_id: string | null
-  instagram_id: string | null
-  youtube_id: string | null
-  image_url: string | null
-  created_at: string
-}
-
-interface NextAction {
-  id: string
-  artist_id: string
-  artist_name: string
-  action_type: string
-  title: string
-  description: string
-  urgency: string
-  reason: string | null
-  expected_impact: string | null
-  status: string
-}
+import { dashboardApi, DashboardStats, TopArtist, RecentActivity } from '@/lib/api/dashboard'
+import {
+  Music, TrendingUp, Heart, Zap, AlertCircle, Users,
+  Activity, CheckCircle, ArrowRight, ArrowUp, ArrowDown,
+  BarChart3, Target, Clock, Play
+} from 'lucide-react'
+import Link from 'next/link'
 
 export default function DashboardPage() {
   const { user } = useAuthStore()
-  const [artists, setArtists] = useState<Artist[]>([])
-  const [nextAction, setNextAction] = useState<NextAction | null>(null)
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [topPerformers, setTopPerformers] = useState<TopArtist[]>([])
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchArtists()
-    fetchNextAction()
+    fetchDashboardData()
   }, [])
 
-  const fetchArtists = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/api/artists/')
-      setArtists(response.data)
+      const [statsData, topPerformersData, activityData] = await Promise.all([
+        dashboardApi.getStats(),
+        dashboardApi.getTopPerformers(5),
+        dashboardApi.getRecentActivity(8)
+      ])
+      setStats(statsData)
+      setTopPerformers(topPerformersData)
+      setRecentActivity(activityData)
       setError(null)
     } catch (err: any) {
-      console.error('Failed to fetch artists:', err)
-      setError('Failed to load artists')
+      console.error('Failed to fetch dashboard data:', err)
+      setError('Failed to load dashboard data')
     } finally {
       setLoading(false)
     }
   }
 
-  const deleteArtist = async (artistId: string, artistName: string) => {
-    if (!confirm(`Are you sure you want to delete ${artistName}? This action cannot be undone.`)) {
-      return
-    }
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    return num.toString()
+  }
 
-    try {
-      await api.delete(`/api/artists/${artistId}`)
-      // Remove artist from state
-      setArtists(artists.filter(a => a.id !== artistId))
-    } catch (err: any) {
-      console.error('Failed to delete artist:', err)
-      alert('Failed to delete artist. Please try again.')
+  const getMomentumColor = (status: string) => {
+    switch (status) {
+      case 'fire': return 'text-red-600'
+      case 'growing': return 'text-green-600'
+      case 'stable': return 'text-blue-600'
+      case 'declining': return 'text-orange-600'
+      default: return 'text-gray-600'
     }
   }
 
-  const exportToCSV = async () => {
-    try {
-      const response = await api.get('/api/artists/export/csv', {
-        responseType: 'blob'
-      })
-
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', `fanpulse_artists_${new Date().toISOString().split('T')[0]}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-    } catch (err: any) {
-      console.error('Failed to export CSV:', err)
-      alert('Failed to export data. Please try again.')
+  const getMomentumBgColor = (status: string) => {
+    switch (status) {
+      case 'fire': return 'bg-red-50 border-red-200'
+      case 'growing': return 'bg-green-50 border-green-200'
+      case 'stable': return 'bg-blue-50 border-blue-200'
+      case 'declining': return 'bg-orange-50 border-orange-200'
+      default: return 'bg-gray-50 border-gray-200'
     }
   }
 
-  const fetchNextAction = async () => {
-    try {
-      setActionLoading(true)
-      const response = await api.get('/api/actions/next')
-      setNextAction(response.data)
-    } catch (err: any) {
-      console.error('Failed to fetch next action:', err)
-      // Don't show error - just keep it null
-    } finally {
-      setActionLoading(false)
+  const getActivityIcon = (type: string, severity?: string) => {
+    if (type === 'alert') {
+      if (severity === 'urgent') return <AlertCircle className="w-5 h-5 text-red-600" />
+      return <AlertCircle className="w-5 h-5 text-orange-600" />
     }
+    if (type === 'action') return <Zap className="w-5 h-5 text-blue-600" />
+    return <Activity className="w-5 h-5 text-purple-600" />
   }
 
-  const handleActionClick = (artistId: string) => {
-    window.location.href = `/dashboard/artists/${artistId}`
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    return `${diffDays}d ago`
   }
 
   return (
     <ProtectedRoute>
       <DashboardLayout>
         <div className="space-y-6">
-          {/* Welcome Message */}
+          {/* Header */}
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">
-              Welcome to FanPulse! 🎵
-            </h2>
-            <p className="mt-2 text-gray-600">
-              Music analytics platform for managers
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="mt-1 text-gray-600">
+              Welcome back, {user?.name || 'User'}! Here's your portfolio overview.
             </p>
           </div>
 
           {/* Email Verification Notice */}
           {user && !user.is_verified && (
             <Alert type="warning" title="Email Not Verified">
-              Please check your email to verify your account. Check your spam folder if you don't
-              see it.
+              Please check your email to verify your account. Check your spam folder if you don't see it.
             </Alert>
           )}
 
@@ -140,274 +119,336 @@ export default function DashboardPage() {
             </Alert>
           )}
 
-          {/* Next Best Action Widget */}
-          {!actionLoading && nextAction && (
-            <div className={`rounded-lg shadow-lg p-6 border-l-4 ${
-              nextAction.urgency === 'critical' ? 'bg-red-50 border-red-500' :
-              nextAction.urgency === 'high' ? 'bg-orange-50 border-orange-500' :
-              nextAction.urgency === 'medium' ? 'bg-yellow-50 border-yellow-500' :
-              'bg-blue-50 border-blue-500'
-            }`}>
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1">
-                  {/* Icon */}
-                  <div className={`p-3 rounded-full ${
-                    nextAction.urgency === 'critical' ? 'bg-red-100' :
-                    nextAction.urgency === 'high' ? 'bg-orange-100' :
-                    nextAction.urgency === 'medium' ? 'bg-yellow-100' :
-                    'bg-blue-100'
-                  }`}>
-                    {nextAction.urgency === 'critical' ? (
-                      <AlertCircle className="w-6 h-6 text-red-600" />
-                    ) : nextAction.urgency === 'high' ? (
-                      <Zap className="w-6 h-6 text-orange-600" />
-                    ) : nextAction.urgency === 'medium' ? (
-                      <TrendingUp className="w-6 h-6 text-yellow-600" />
-                    ) : (
-                      <CheckCircle className="w-6 h-6 text-blue-600" />
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
+                  <div className="h-8 bg-gray-200 rounded w-16"></div>
+                </div>
+              ))}
+            </div>
+          ) : stats ? (
+            <>
+              {/* Stats Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Total Artists */}
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-blue-600 rounded-lg">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-blue-700">Growing</p>
+                      <p className="text-xs text-blue-600">+{stats.artists_growing}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-900 mb-1">Total Artists</h3>
+                    <p className="text-3xl font-bold text-blue-900">{stats.total_artists}</p>
+                    {stats.artists_declining > 0 && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        {stats.artists_declining} declining
+                      </p>
                     )}
                   </div>
+                </div>
 
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-bold text-gray-900">{nextAction.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
-                        nextAction.urgency === 'critical' ? 'bg-red-200 text-red-800' :
-                        nextAction.urgency === 'high' ? 'bg-orange-200 text-orange-800' :
-                        nextAction.urgency === 'medium' ? 'bg-yellow-200 text-yellow-800' :
-                        'bg-blue-200 text-blue-800'
-                      }`}>
-                        {nextAction.urgency}
-                      </span>
+                {/* Total Streams */}
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-purple-600 rounded-lg">
+                      <Play className="w-6 h-6 text-white" />
                     </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-purple-900 mb-1">Total Streams</h3>
+                    <p className="text-3xl font-bold text-purple-900">{formatNumber(stats.total_streams)}</p>
+                    <p className="text-xs text-purple-600 mt-1">Across all platforms</p>
+                  </div>
+                </div>
 
-                    <p className="text-gray-700 mb-3">{nextAction.description}</p>
+                {/* Avg Momentum */}
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-green-600 rounded-lg">
+                      <TrendingUp className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-green-600">Score</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-green-900 mb-1">Avg Momentum</h3>
+                    <p className="text-3xl font-bold text-green-900">{stats.avg_momentum.toFixed(1)}/10</p>
+                    <p className="text-xs text-green-600 mt-1">Portfolio average</p>
+                  </div>
+                </div>
 
-                    {nextAction.reason && (
-                      <div className="mb-3 p-3 bg-white/50 rounded-lg">
-                        <p className="text-sm text-gray-600">
-                          <strong>Why:</strong> {nextAction.reason}
-                        </p>
-                      </div>
-                    )}
-
-                    {nextAction.expected_impact && (
-                      <div className="mb-4 p-3 bg-white/50 rounded-lg">
-                        <p className="text-sm text-gray-600">
-                          <strong>Expected Impact:</strong> {nextAction.expected_impact}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Artist Info */}
-                    <p className="text-sm text-gray-500 mb-4">
-                      For: <strong>{nextAction.artist_name}</strong>
-                    </p>
-
-                    {/* Action Button */}
-                    <button
-                      onClick={() => handleActionClick(nextAction.artist_id)}
-                      className={`inline-flex items-center px-6 py-3 rounded-lg font-semibold transition-colors ${
-                        nextAction.urgency === 'critical' ? 'bg-red-600 hover:bg-red-700 text-white' :
-                        nextAction.urgency === 'high' ? 'bg-orange-600 hover:bg-orange-700 text-white' :
-                        nextAction.urgency === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700 text-white' :
-                        'bg-blue-600 hover:bg-blue-700 text-white'
-                      }`}
-                    >
-                      Take Action →
-                    </button>
+                {/* Total Superfans */}
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl border border-pink-200 p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-pink-600 rounded-lg">
+                      <Heart className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-pink-900 mb-1">Total Superfans</h3>
+                    <p className="text-3xl font-bold text-pink-900">{formatNumber(stats.total_superfans)}</p>
+                    <p className="text-xs text-pink-600 mt-1">High-value fans</p>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Quick Actions */}
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={exportToCSV}
-              disabled={artists.length === 0}
-              className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download className="w-5 h-5 mr-2" />
-              Export CSV
-            </button>
-            <a
-              href="/dashboard/artists/add"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Ajouter un artiste
-            </a>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-sm font-medium text-gray-500">Total Artists</h3>
-              {loading ? (
-                <div className="mt-2 animate-pulse">
-                  <div className="h-9 bg-gray-200 rounded w-16"></div>
-                </div>
-              ) : (
-                <>
-                  <p className="mt-2 text-3xl font-bold text-gray-900">{artists.length}</p>
-                  <p className="mt-2 text-sm text-gray-600">
-                    {artists.length === 0 ? 'No artists added yet' : `${artists.length} artist${artists.length > 1 ? 's' : ''} tracked`}
-                  </p>
-                </>
-              )}
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-sm font-medium text-gray-500">Total Streams</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900">-</p>
-              <p className="mt-2 text-sm text-gray-600">Add artists to track streams</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-sm font-medium text-gray-500">Average Momentum</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900">-</p>
-              <p className="mt-2 text-sm text-gray-600">Data available after setup</p>
-            </div>
-          </div>
-
-          {/* Artists List */}
-          {!loading && artists.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Your Artists
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {artists.map((artist) => (
-                  <div
-                    key={artist.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative group cursor-pointer"
-                    onClick={() => window.location.href = `/dashboard/artists/${artist.id}`}
+              {/* Actions & Alerts Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Pending Actions */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Zap className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Pending Actions</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.pending_actions}</p>
+                    </div>
+                  </div>
+                  {stats.critical_actions > 0 && (
+                    <div className="mt-3 p-2 bg-red-50 rounded-lg">
+                      <p className="text-xs font-semibold text-red-700">
+                        {stats.critical_actions} Critical Priority
+                      </p>
+                    </div>
+                  )}
+                  <Link
+                    href="/dashboard/actions"
+                    className="mt-4 block text-center text-sm font-medium text-blue-600 hover:text-blue-700"
                   >
-                    <div className="flex items-center gap-3">
-                      {artist.image_url ? (
-                        <img
-                          src={artist.image_url}
-                          alt={artist.name}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center">
-                          <Music className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900 truncate">{artist.name}</h4>
-                        {artist.genre && (
-                          <p className="text-sm text-gray-600 truncate">{artist.genre}</p>
-                        )}
-                        <div className="flex gap-2 mt-1">
-                          {artist.spotify_id && (
-                            <span className="text-xs text-green-600">Spotify</span>
-                          )}
-                          {artist.instagram_id && (
-                            <span className="text-xs text-pink-600">Instagram</span>
-                          )}
-                          {artist.youtube_id && (
-                            <span className="text-xs text-red-600">YouTube</span>
-                          )}
-                        </div>
-                      </div>
+                    View All Actions →
+                  </Link>
+                </div>
+
+                {/* Recent Alerts */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <AlertCircle className="w-5 h-5 text-orange-600" />
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        deleteArtist(artist.id, artist.name)
-                      }}
-                      className="absolute top-2 right-2 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                      title="Delete artist"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Recent Alerts</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.recent_alerts}</p>
+                    </div>
                   </div>
-                ))}
+                  <p className="text-xs text-gray-500 mt-3">Last 7 days</p>
+                  <Link
+                    href="/dashboard/alerts"
+                    className="mt-4 block text-center text-sm font-medium text-orange-600 hover:text-orange-700"
+                  >
+                    View Alerts →
+                  </Link>
+                </div>
+
+                {/* Quick Add */}
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300 p-6 flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-all">
+                  <Music className="w-12 h-12 text-gray-400 mb-3" />
+                  <p className="text-sm font-medium text-gray-600 mb-3 text-center">
+                    Add New Artist
+                  </p>
+                  <Link
+                    href="/dashboard/artists/add"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    + Add Artist
+                  </Link>
+                </div>
               </div>
+
+              {/* Main Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Top Performers - Takes 2 columns */}
+                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">Top Performers</h2>
+                      <p className="text-sm text-gray-600">Ranked by momentum score</p>
+                    </div>
+                    <Link
+                      href="/dashboard/momentum"
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    >
+                      View All
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+
+                  {topPerformers.length === 0 ? (
+                    <div className="text-center py-12">
+                      <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-4">No artists added yet</p>
+                      <Link
+                        href="/dashboard/artists/add"
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        Add Your First Artist
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {topPerformers.map((artist, index) => (
+                        <Link
+                          key={artist.id}
+                          href={`/dashboard/artists/${artist.id}`}
+                          className={`block p-4 rounded-lg border ${getMomentumBgColor(artist.momentum_status)} hover:shadow-md transition-all`}
+                        >
+                          <div className="flex items-center gap-4">
+                            {/* Rank */}
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center font-bold text-gray-700 shadow-sm">
+                              {index + 1}
+                            </div>
+
+                            {/* Artist Image */}
+                            {artist.image_url ? (
+                              <img
+                                src={artist.image_url}
+                                alt={artist.name}
+                                className="w-12 h-12 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                <Music className="w-6 h-6 text-gray-400" />
+                              </div>
+                            )}
+
+                            {/* Artist Info */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-gray-900 truncate">{artist.name}</h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-xs font-medium uppercase ${getMomentumColor(artist.momentum_status)}`}>
+                                  {artist.momentum_status}
+                                </span>
+                                {artist.trend_7d !== null && (
+                                  <span className="flex items-center gap-0.5 text-xs">
+                                    {artist.trend_7d > 0 ? (
+                                      <>
+                                        <ArrowUp className="w-3 h-3 text-green-600" />
+                                        <span className="text-green-600">+{artist.trend_7d.toFixed(1)}%</span>
+                                      </>
+                                    ) : artist.trend_7d < 0 ? (
+                                      <>
+                                        <ArrowDown className="w-3 h-3 text-red-600" />
+                                        <span className="text-red-600">{artist.trend_7d.toFixed(1)}%</span>
+                                      </>
+                                    ) : (
+                                      <span className="text-gray-600">0%</span>
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Momentum Score */}
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-gray-900">
+                                {artist.momentum_score.toFixed(1)}
+                              </div>
+                              <div className="text-xs text-gray-600">Momentum</div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Recent Activity - Takes 1 column */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="mb-6">
+                    <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
+                    <p className="text-sm text-gray-600">Last 7 days</p>
+                  </div>
+
+                  {recentActivity.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600">No recent activity</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                      {recentActivity.map((activity, index) => (
+                        <div
+                          key={index}
+                          className="flex gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex-shrink-0 mt-0.5">
+                            {getActivityIcon(activity.type, activity.severity)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {activity.title}
+                            </p>
+                            <p className="text-xs text-gray-600 truncate">
+                              {activity.artist_name}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {formatTimestamp(activity.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl p-8 text-white">
+                <h2 className="text-2xl font-bold mb-2">Explore Your Analytics</h2>
+                <p className="text-blue-100 mb-6">Deep dive into your artist portfolio</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Link
+                    href="/dashboard/momentum"
+                    className="bg-white/10 backdrop-blur-sm hover:bg-white/20 p-4 rounded-lg transition-all flex items-center gap-3 group"
+                  >
+                    <TrendingUp className="w-8 h-8" />
+                    <div>
+                      <p className="font-semibold">Momentum Index</p>
+                      <p className="text-sm text-blue-100">Track growth velocity</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 ml-auto group-hover:translate-x-1 transition-transform" />
+                  </Link>
+
+                  <Link
+                    href="/dashboard/superfans"
+                    className="bg-white/10 backdrop-blur-sm hover:bg-white/20 p-4 rounded-lg transition-all flex items-center gap-3 group"
+                  >
+                    <Heart className="w-8 h-8" />
+                    <div>
+                      <p className="font-semibold">Superfans</p>
+                      <p className="text-sm text-blue-100">Identify top fans</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 ml-auto group-hover:translate-x-1 transition-transform" />
+                  </Link>
+
+                  <Link
+                    href="/dashboard/actions"
+                    className="bg-white/10 backdrop-blur-sm hover:bg-white/20 p-4 rounded-lg transition-all flex items-center gap-3 group"
+                  >
+                    <Zap className="w-8 h-8" />
+                    <div>
+                      <p className="font-semibold">Next Best Actions</p>
+                      <p className="text-sm text-blue-100">AI recommendations</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 ml-auto group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600">No data available</p>
             </div>
           )}
-
-          {/* Getting Started */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">
-              🚀 Getting Started
-            </h3>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <span className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold mr-3">
-                  1
-                </span>
-                <div>
-                  <p className="font-medium text-blue-900">Add your first artist</p>
-                  <p className="text-sm text-blue-700">
-                    Connect Spotify, Instagram, and other platforms
-                  </p>
-                </div>
-              </li>
-              <li className="flex items-start">
-                <span className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold mr-3">
-                  2
-                </span>
-                <div>
-                  <p className="font-medium text-blue-900">Configure integrations</p>
-                  <p className="text-sm text-blue-700">
-                    Set up API keys for data collection
-                  </p>
-                </div>
-              </li>
-              <li className="flex items-start">
-                <span className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold mr-3">
-                  3
-                </span>
-                <div>
-                  <p className="font-medium text-blue-900">Start analyzing</p>
-                  <p className="text-sm text-blue-700">
-                    View momentum, superfans, and forecasts
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          {/* Coming Soon */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              ⏳ Coming Soon
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900">Momentum Index</h4>
-                <p className="text-sm text-gray-600 mt-1">
-                  Real-time tracking of artist growth trajectories
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900">Superfan Analysis</h4>
-                <p className="text-sm text-gray-600 mt-1">
-                  Identify and engage with your top 100 fans
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900">Revenue Forecasting</h4>
-                <p className="text-sm text-gray-600 mt-1">
-                  Predict income 3-12 months ahead
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900">Release Optimizer</h4>
-                <p className="text-sm text-gray-600 mt-1">
-                  Find the best dates to release music
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>
