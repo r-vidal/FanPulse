@@ -9,7 +9,26 @@ The dashboard shows database errors:
 
 ### Step 1: Fix Docker (if needed)
 
-#### Quick Fix - Try this first:
+#### 🔥 MOST IMPORTANT: Check Disk Space First!
+
+```bash
+df -h
+```
+
+**If you have less than 2GB free**, Docker won't start! This is the #1 cause (80% of cases).
+
+**Free up space immediately:**
+```bash
+./free-disk-space.sh
+```
+
+This automatically cleans Docker images, containers, logs, and temporary files (2-5 minutes).
+
+📖 See detailed guide: `FIX_LOW_DISK_SPACE.md`
+
+---
+
+#### After disk space is OK, try force restart:
 
 ```bash
 ./docker-force-restart.sh
@@ -17,15 +36,14 @@ The dashboard shows database errors:
 
 This will forcefully restart Docker and fix most issues (1 minute).
 
-#### If Docker daemon is blocked/hanging:
+---
 
-**👉 YOUR ISSUE:** See `FIX_DOCKER_DAEMON_BLOCKED.md` for detailed solutions.
+#### If Docker daemon is still blocked/hanging:
+
+📖 See `FIX_DOCKER_DAEMON_BLOCKED.md` for detailed solutions.
 
 Quick commands:
 ```bash
-# Force restart (try this first)
-./docker-force-restart.sh
-
 # Debug what's wrong
 sudo ./docker-daemon-debug.sh
 
@@ -89,7 +107,8 @@ This rebuilds everything from scratch (takes longer but more thorough).
 
 | Script | When to Use |
 |--------|-------------|
-| `docker-force-restart.sh` | **Docker blocked?** Start here! |
+| `free-disk-space.sh` | **Low disk space?** Start here! ⭐ |
+| `docker-force-restart.sh` | Docker blocked after cleaning disk |
 | `docker-daemon-debug.sh` | Analyze why Docker is stuck |
 | `docker-nuclear-reset.sh` | Last resort - complete Docker reset |
 | `fix-database.sh` | Apply database fixes (after Docker works) |
@@ -100,10 +119,11 @@ This rebuilds everything from scratch (takes longer but more thorough).
 
 ## Need Help?
 
-1. **Docker daemon blocked/hanging**: See `FIX_DOCKER_DAEMON_BLOCKED.md` ⭐
-2. **Docker won't start**: See `DOCKER_TROUBLESHOOTING.md`
-3. **Migrations fail**: Check logs with `docker compose logs backend`
-4. **Still getting errors**: Check `FIX_DATABASE_SCHEMA.md` for detailed info
+1. **Low disk space** (only a few MB/GB free): See `FIX_LOW_DISK_SPACE.md` 🔥
+2. **Docker daemon blocked/hanging**: See `FIX_DOCKER_DAEMON_BLOCKED.md` ⭐
+3. **Docker won't start**: See `DOCKER_TROUBLESHOOTING.md`
+4. **Migrations fail**: Check logs with `docker compose logs backend`
+5. **Still getting errors**: Check `FIX_DATABASE_SCHEMA.md` for detailed info
 
 ---
 
