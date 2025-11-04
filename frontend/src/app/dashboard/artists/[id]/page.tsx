@@ -14,6 +14,7 @@ import {
   Play, CheckCircle, Clock, XCircle
 } from 'lucide-react'
 import Link from 'next/link'
+import { MomentumChart } from '@/components/charts/MomentumChart'
 
 export default function ArtistDetailPage() {
   const params = useParams()
@@ -383,17 +384,28 @@ export default function ArtistDetailPage() {
                 </div>
               </div>
 
-              {/* Momentum Chart Placeholder */}
-              {momentumHistory.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Momentum Trend (90 Days)</h2>
-                  <div className="text-center py-12 text-gray-500">
-                    <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p>Chart visualization coming soon</p>
-                    <p className="text-sm">{momentumHistory.length} data points available</p>
+              {/* Momentum Chart */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Momentum Trend</h2>
+                    <p className="text-sm text-gray-600">
+                      {momentumHistory.length > 0
+                        ? `${momentumHistory.length} days of momentum data`
+                        : 'No momentum data available yet'}
+                    </p>
                   </div>
+                  {momentumHistory.length > 0 && (
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600">Current Score</p>
+                      <p className={`text-2xl font-bold ${getMomentumColor(stats?.momentum_status || 'stable')}`}>
+                        {stats?.current_momentum.toFixed(1)}/10
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
+                <MomentumChart data={momentumHistory} height={350} />
+              </div>
             </>
           ) : (
             <div className="text-center py-12">

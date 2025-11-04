@@ -73,13 +73,13 @@ class OpportunityDetector:
 
             recent = self.db.query(StreamHistory).filter(
                 StreamHistory.artist_id == artist.id,
-                StreamHistory.date >= yesterday,
+                StreamHistory.timestamp >= yesterday,
             ).first()
 
             previous = self.db.query(StreamHistory).filter(
                 StreamHistory.artist_id == artist.id,
-                StreamHistory.date >= two_days_ago,
-                StreamHistory.date < yesterday,
+                StreamHistory.timestamp >= two_days_ago,
+                StreamHistory.timestamp < yesterday,
             ).first()
 
             if recent and previous and previous.total_streams > 0:
@@ -130,14 +130,14 @@ class OpportunityDetector:
             # Last 7 days
             recent_week = self.db.query(func.sum(StreamHistory.total_streams)).filter(
                 StreamHistory.artist_id == artist.id,
-                StreamHistory.date >= week_ago,
+                StreamHistory.timestamp >= week_ago,
             ).scalar() or 0
 
             # Previous 7 days
             previous_week = self.db.query(func.sum(StreamHistory.total_streams)).filter(
                 StreamHistory.artist_id == artist.id,
-                StreamHistory.date >= two_weeks_ago,
-                StreamHistory.date < week_ago,
+                StreamHistory.timestamp >= two_weeks_ago,
+                StreamHistory.timestamp < week_ago,
             ).scalar() or 0
 
             if previous_week > self.MIN_STREAMS_FOR_ANALYSIS and previous_week > 0:
@@ -186,8 +186,8 @@ class OpportunityDetector:
 
             history = self.db.query(StreamHistory).filter(
                 StreamHistory.artist_id == artist.id,
-                StreamHistory.date >= three_weeks_ago,
-            ).order_by(StreamHistory.date).all()
+                StreamHistory.timestamp >= three_weeks_ago,
+            ).order_by(StreamHistory.timestamp).all()
 
             if len(history) < 21:
                 return opportunities
@@ -250,7 +250,7 @@ class OpportunityDetector:
 
             total_streams = self.db.query(func.sum(StreamHistory.total_streams)).filter(
                 StreamHistory.artist_id == artist.id,
-                StreamHistory.date >= month_ago,
+                StreamHistory.timestamp >= month_ago,
             ).scalar() or 0
 
             # If streams are consistently high, it's a good release window

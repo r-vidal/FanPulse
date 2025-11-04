@@ -234,9 +234,9 @@ class ReportGenerator:
         try:
             history = self.db.query(StreamHistory).filter(
                 StreamHistory.artist_id == artist_id,
-                StreamHistory.date >= start_date,
-                StreamHistory.date <= end_date,
-            ).order_by(StreamHistory.date).all()
+                StreamHistory.timestamp >= start_date,
+                StreamHistory.timestamp <= end_date,
+            ).order_by(StreamHistory.timestamp).all()
 
             if not history:
                 return {
