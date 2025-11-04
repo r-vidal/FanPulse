@@ -17,6 +17,7 @@ Superfan Tiers:
 """
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, desc
 from app.models.artist import Artist
@@ -52,10 +53,16 @@ class SuperfanAnalyzer:
             List of superfan profiles
         """
         try:
+            # Convert artist_id to UUID if it's a string
+            if isinstance(artist_id, str):
+                artist_uuid = UUID(artist_id)
+            else:
+                artist_uuid = artist_id
+
             # Get existing superfans
             superfans = (
                 self.db.query(Superfan)
-                .filter(Superfan.artist_id == artist_id)
+                .filter(Superfan.artist_id == artist_uuid)
                 .all()
             )
 
