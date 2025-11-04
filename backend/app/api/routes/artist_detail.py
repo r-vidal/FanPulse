@@ -86,6 +86,7 @@ async def get_artist_stats(
     momentum_status = 'unknown'
     momentum_trend_7d = None
     momentum_trend_30d = None
+    latest_momentum = None  # Initialize to None
 
     try:
         latest_momentum = db.query(MomentumScore).filter(
