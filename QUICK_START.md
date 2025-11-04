@@ -9,20 +9,29 @@ The dashboard shows database errors:
 
 ### Step 1: Fix Docker (if needed)
 
-If Docker is not starting or looping, try:
+#### Quick Fix - Try this first:
 
 ```bash
-sudo systemctl restart docker
+./docker-force-restart.sh
 ```
 
-Wait 30 seconds, then verify:
+This will forcefully restart Docker and fix most issues (1 minute).
+
+#### If Docker daemon is blocked/hanging:
+
+**👉 YOUR ISSUE:** See `FIX_DOCKER_DAEMON_BLOCKED.md` for detailed solutions.
+
+Quick commands:
 ```bash
-docker info
-```
+# Force restart (try this first)
+./docker-force-restart.sh
 
-**If Docker still doesn't work**, see detailed troubleshooting:
-- Run: `./docker-diagnostic.sh`
-- Read: `DOCKER_TROUBLESHOOTING.md`
+# Debug what's wrong
+sudo ./docker-daemon-debug.sh
+
+# Nuclear option (deletes all Docker data - last resort)
+./docker-nuclear-reset.sh
+```
 
 ### Step 2: Apply Database Fixes
 
@@ -80,18 +89,21 @@ This rebuilds everything from scratch (takes longer but more thorough).
 
 | Script | When to Use |
 |--------|-------------|
-| `fix-database.sh` | **Start here** - Smart auto-detection |
-| `apply-migrations-only.sh` | Containers running, quick update |
+| `docker-force-restart.sh` | **Docker blocked?** Start here! |
+| `docker-daemon-debug.sh` | Analyze why Docker is stuck |
+| `docker-nuclear-reset.sh` | Last resort - complete Docker reset |
+| `fix-database.sh` | Apply database fixes (after Docker works) |
+| `apply-migrations-only.sh` | Quick update if containers running |
 | `rebuild.sh` | Fresh start, full rebuild |
-| `docker-diagnostic.sh` | Diagnose Docker issues |
 
 ---
 
 ## Need Help?
 
-1. **Docker won't start**: See `DOCKER_TROUBLESHOOTING.md`
-2. **Migrations fail**: Check logs with `docker compose logs backend`
-3. **Still getting errors**: Check `FIX_DATABASE_SCHEMA.md` for detailed info
+1. **Docker daemon blocked/hanging**: See `FIX_DOCKER_DAEMON_BLOCKED.md` ⭐
+2. **Docker won't start**: See `DOCKER_TROUBLESHOOTING.md`
+3. **Migrations fail**: Check logs with `docker compose logs backend`
+4. **Still getting errors**: Check `FIX_DATABASE_SCHEMA.md` for detailed info
 
 ---
 
