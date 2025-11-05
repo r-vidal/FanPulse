@@ -27,7 +27,7 @@ def upgrade() -> None:
         sa.Column('consistency_score', sa.Float(), nullable=False, server_default='5.0'),
         sa.Column('momentum_category', sa.String(20), server_default='Steady'),
         sa.Column('key_insights', postgresql.JSONB(), server_default='[]'),
-        sa.Column('calculated_at', sa.DateTime(), nullable=False, index=True),
+        sa.Column('calculated_at', sa.DateTime(), nullable=False),
     )
 
     # Create indexes
