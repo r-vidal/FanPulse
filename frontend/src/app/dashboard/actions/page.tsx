@@ -14,6 +14,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import ActionCard from '@/components/actions/ActionCard'
 import ActionFilters from '@/components/actions/ActionFilters'
 import Alert from '@/components/ui/Alert'
+import { SkeletonStats, SkeletonList } from '@/components/ui/Skeleton'
 import { actionsApi } from '@/lib/api/actions'
 import { api } from '@/lib/api'
 import { NextAction, ActionUrgency, ActionStatus } from '@/types/actions'
@@ -193,10 +194,10 @@ export default function ActionsPage() {
 
           {/* Loading */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-              <span className="ml-3 text-gray-600">Loading actions...</span>
-            </div>
+            <>
+              <SkeletonStats />
+              <SkeletonList items={8} />
+            </>
           )}
 
           {/* Content */}

@@ -75,3 +75,46 @@ body {
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
 }
+
+/* Command Palette (cmdk) styles */
+[cmdk-root] {
+  max-width: 100%;
+}
+
+[cmdk-group-heading] {
+  @apply px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider;
+}
+
+[cmdk-item] {
+  content-visibility: auto;
+}
+
+[cmdk-item][aria-selected='true'] {
+  @apply bg-blue-50;
+}
+
+[cmdk-separator] {
+  @apply h-px bg-gray-200 -mx-1 my-1;
+}
+
+[cmdk-input] {
+  font-family: inherit;
+}
+
+[cmdk-list] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+[cmdk-list]::-webkit-scrollbar {
+  width: 6px;
+}
+
+[cmdk-list]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[cmdk-list]::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}

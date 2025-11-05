@@ -13,6 +13,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import MomentumBadge from '@/components/momentum/MomentumBadge'
 import MomentumBreakdown from '@/components/momentum/MomentumBreakdown'
 import Alert from '@/components/ui/Alert'
+import { SkeletonStats, SkeletonList, SkeletonCard } from '@/components/ui/Skeleton'
 import { momentumApi, MomentumData } from '@/lib/api/momentum'
 import { api } from '@/lib/api'
 import { Activity, Loader2, ChevronRight } from 'lucide-react'
@@ -174,10 +175,15 @@ export default function MomentumPage() {
 
           {/* Loading */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-              <span className="ml-3 text-gray-600">Loading momentum data...</span>
-            </div>
+            <>
+              <SkeletonStats />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <SkeletonList items={5} />
+                </div>
+                <SkeletonCard />
+              </div>
+            </>
           )}
 
           {/* Content */}

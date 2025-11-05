@@ -5,6 +5,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
 import Alert from '@/components/ui/Alert'
+import { SkeletonStats, SkeletonCard, SkeletonList } from '@/components/ui/Skeleton'
 import { dashboardApi, DashboardStats, TopArtist, RecentActivity } from '@/lib/api/dashboard'
 import {
   Music, TrendingUp, Heart, Zap, AlertCircle, Users,
@@ -120,14 +121,20 @@ export default function DashboardPage() {
           )}
 
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
-                  <div className="h-8 bg-gray-200 rounded w-16"></div>
+            <>
+              <SkeletonStats />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <SkeletonList items={5} />
                 </div>
-              ))}
-            </div>
+                <SkeletonCard />
+              </div>
+            </>
           ) : stats ? (
             <>
               {/* Stats Overview */}

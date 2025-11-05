@@ -12,6 +12,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import SuperfanCard from '@/components/superfans/SuperfanCard'
 import Alert from '@/components/ui/Alert'
+import { SkeletonStats, SkeletonCard } from '@/components/ui/Skeleton'
 import { superfansApi, Superfan, SuperfanInsights } from '@/lib/api/superfans'
 import { api } from '@/lib/api'
 import { Heart, Loader2, Users, Download } from 'lucide-react'
@@ -176,10 +177,14 @@ export default function SuperfansPage() {
 
           {/* Loading */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-              <span className="ml-3 text-gray-600">Loading artists...</span>
-            </div>
+            <>
+              <SkeletonStats />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            </>
           )}
 
           {/* Content */}
