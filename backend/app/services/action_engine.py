@@ -172,14 +172,16 @@ class ActionEngine:
     ) -> List[NextBestAction]:
         """Rule: Momentum status is 'declining'"""
         if momentum and momentum.get('status') == 'declining':
+            score = momentum.get('score', 0) or 0  # Handle None values
+            trend = momentum.get('trend_30d', 0) or 0
             return [NextBestAction(
                 artist_id=artist_uuid,
                 user_id=user_uuid,
                 action_type="analyze_decline",
                 title="⚠️ Investigate Momentum Drop",
-                description=f"{artist.name}'s momentum is declining (score: {momentum['score']}/10). Analyze recent activity and engagement.",
+                description=f"{artist.name}'s momentum is declining (score: {score}/10). Analyze recent activity and engagement.",
                 urgency=ActionUrgency.HIGH,
-                reason=f"Momentum score dropped to {momentum['score']}/10. Trend: {momentum.get('trend_30d', 0):.1f}%",
+                reason=f"Momentum score dropped to {score}/10. Trend: {trend:.1f}%",
                 expected_impact="Identify causes of decline and implement recovery strategies.",
                 status=ActionStatus.PENDING,
                 created_at=datetime.utcnow()
@@ -195,14 +197,15 @@ class ActionEngine:
     ) -> List[NextBestAction]:
         """Rule: Momentum status is 'fire' (>7)"""
         if momentum and momentum.get('status') == 'fire':
+            score = momentum.get('score', 0) or 0  # Handle None values
             return [NextBestAction(
                 artist_id=artist_uuid,
                 user_id=user_uuid,
                 action_type="capitalize_momentum",
                 title="🔥 Capitalize on Fire Momentum!",
-                description=f"{artist.name} is ON FIRE! (score: {momentum['score']}/10). NOW is the time to release content, book shows, and amplify marketing.",
+                description=f"{artist.name} is ON FIRE! (score: {score}/10). NOW is the time to release content, book shows, and amplify marketing.",
                 urgency=ActionUrgency.CRITICAL,
-                reason=f"Momentum score at {momentum['score']}/10. Strike while hot!",
+                reason=f"Momentum score at {score}/10. Strike while hot!",
                 expected_impact="Maximize growth during peak momentum window. 2-3x potential reach.",
                 status=ActionStatus.PENDING,
                 created_at=datetime.utcnow()

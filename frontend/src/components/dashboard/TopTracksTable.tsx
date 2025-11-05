@@ -40,7 +40,7 @@ export function TopTracksTable() {
       // Fetch top tracks for each artist
       for (const artist of artistsResponse.data) {
         try {
-          const tracksResponse = await api.get(`/api/analytics/artists/${artist.id}/top-tracks`, {
+          const tracksResponse = await api.get(`/api/artist-detail/${artist.id}/top-tracks`, {
             params: { limit: 5 }
           })
           const artistTracks = tracksResponse.data.map((track: any) => ({
