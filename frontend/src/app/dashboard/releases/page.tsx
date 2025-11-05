@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { releasesApi } from '@/lib/api/releases'
 import Alert from '@/components/ui/Alert'
 import Button from '@/components/ui/Button'
+import { SkeletonCard, SkeletonStats } from '@/components/ui/Skeleton'
 import { Calendar, TrendingUp, Users, Sparkles, Target, AlertTriangle, CheckCircle } from 'lucide-react'
 import type { ReleaseOptimization, ReleaseScore } from '@/types'
 
@@ -307,6 +308,19 @@ export default function ReleaseOptimizerPage() {
                 </div>
               )}
             </>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="space-y-6">
+              <SkeletonStats />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            </div>
           )}
 
           {/* Empty State */}

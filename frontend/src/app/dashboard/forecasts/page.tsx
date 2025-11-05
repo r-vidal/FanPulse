@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { forecastsApi } from '@/lib/api/forecasts'
 import Alert from '@/components/ui/Alert'
 import Button from '@/components/ui/Button'
+import { SkeletonCard, SkeletonStats } from '@/components/ui/Skeleton'
 import {
   LineChart,
   Line,
@@ -421,6 +422,18 @@ export default function ForecastsPage() {
                 </div>
               </div>
             </>
+          )}
+
+          {/* Loading State */}
+          {(loading || generating) && !forecast && (
+            <div className="space-y-6">
+              <SkeletonStats />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+              <SkeletonCard />
+            </div>
           )}
 
           {/* Empty State */}
