@@ -2,7 +2,7 @@
 import enum
 import uuid
 from datetime import datetime, timedelta
-from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -44,7 +44,11 @@ class APIKey(Base):
     key_prefix = Column(String(8), nullable=False)  # First 8 chars for identification (e.g., "fp_live_")
 
     # Rate limiting
-    rate_limit_tier = Column(SQLEnum(RateLimitTier), nullable=False, default=RateLimitTier.SOLO)
+    rate_limit_tier = Column(
+        Enum(RateLimitTier, values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=RateLimitTier.SOLO
+    )
     requests_per_hour = Column(Integer, nullable=False)  # Cached limit for fast checks
 
     # Usage tracking
@@ -54,7 +58,11 @@ class APIKey(Base):
     current_hour_start = Column(DateTime)
 
     # Status and expiration
-    status = Column(SQLEnum(APIKeyStatus), nullable=False, default=APIKeyStatus.ACTIVE)
+    status = Column(
+        Enum(APIKeyStatus, values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=APIKeyStatus.ACTIVE
+    )
     expires_at = Column(DateTime)  # Optional expiration
 
     # Permissions and scopes (future-proof)

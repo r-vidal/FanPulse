@@ -47,6 +47,16 @@ export const superfansApi = {
   },
 
   /**
+   * Get superfans for an artist (alias for list with default params)
+   */
+  getForArtist: async (artistId: string): Promise<Superfan[]> => {
+    const response = await api.get(`/api/analytics/${artistId}/superfans/list`, {
+      params: { min_score: 7.0, days: 90 }
+    })
+    return response.data.superfans || []
+  },
+
+  /**
    * List superfans for an artist
    */
   list: async (artistId: string, minScore: number = 7.0, days: number = 90): Promise<SuperfanListResponse> => {
