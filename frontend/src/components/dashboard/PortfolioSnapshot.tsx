@@ -17,8 +17,8 @@ interface Artist {
   momentum_score: number
   momentum_status: 'fire' | 'growing' | 'stable' | 'declining'
   trend_7d: number | null
-  total_streams: number
-  total_superfans: number
+  total_streams: number | null | undefined
+  total_superfans: number | null | undefined
 }
 
 export function PortfolioSnapshot() {
@@ -82,7 +82,8 @@ export function PortfolioSnapshot() {
     return <Minus className="w-4 h-4 text-gray-400" />
   }
 
-  const formatNumber = (num: number): string => {
+  const formatNumber = (num: number | null | undefined): string => {
+    if (num === null || num === undefined) return '0'
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
     return num.toString()
