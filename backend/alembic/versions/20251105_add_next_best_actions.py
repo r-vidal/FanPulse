@@ -1,7 +1,7 @@
 """add next_best_actions table
 
-Revision ID: 20251105_add_nba
-Revises: 20251104_add_momentum_scores
+Revision ID: 008_next_best_actions
+Revises: 007_momentum_scores
 Create Date: 2025-11-05 15:15:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '20251105_add_nba'
-down_revision = '20251104_add_momentum_scores'
+revision = '008_next_best_actions'
+down_revision = '007_momentum_scores'
 branch_labels = None
 depends_on = None
 
