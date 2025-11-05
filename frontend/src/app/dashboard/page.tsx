@@ -13,6 +13,14 @@ import {
   BarChart3, Target, Clock, Play
 } from 'lucide-react'
 import Link from 'next/link'
+import {
+  PortfolioSnapshot,
+  TopTracksTable,
+  ArtistRankings,
+  BestTimeToPostV2,
+  StreamEvolutionV2,
+  SocialEngagementV2
+} from '@/components/dashboard'
 
 export default function DashboardPage() {
   const { user } = useAuthStore()
@@ -269,6 +277,24 @@ export default function DashboardPage() {
                   </Link>
                 </div>
               </div>
+
+              {/* Portfolio Snapshot - New Widget */}
+              <PortfolioSnapshot />
+
+              {/* Top Tracks Table - New Widget */}
+              <TopTracksTable />
+
+              {/* Artist Rankings - New Widget */}
+              <ArtistRankings />
+
+              {/* Performance Charts Row - Stream & Social */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StreamEvolutionV2 />
+                <SocialEngagementV2 />
+              </div>
+
+              {/* Best Time to Post - New Widget */}
+              <BestTimeToPostV2 />
 
               {/* Main Content Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
