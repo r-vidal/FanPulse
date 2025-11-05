@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import { ToastProvider } from '@/contexts/ToastContext'
 import { ToastContainer } from '@/components/ui/Toast'
+import { Analytics } from '@vercel/analytics/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             <ToastContainer />
           </ToastProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
