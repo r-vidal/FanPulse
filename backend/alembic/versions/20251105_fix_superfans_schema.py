@@ -25,8 +25,8 @@ def upgrade() -> None:
     op.drop_column('superfans', 'updated_at')
 
     # Add new columns to match the model
-    op.add_column('superfans', sa.Column('platform_user_id', sa.String(), nullable=True, index=True))
-    op.add_column('superfans', sa.Column('fvs_score', sa.Float(), nullable=True, default=0.0))
+    op.add_column('superfans', sa.Column('platform_user_id', sa.String(), nullable=True))
+    op.add_column('superfans', sa.Column('fvs_score', sa.Float(), nullable=True))
     op.add_column('superfans', sa.Column('listening_hours', sa.Float(), default=0.0))
     op.add_column('superfans', sa.Column('monetization_score', sa.Float(), default=0.0))
     op.add_column('superfans', sa.Column('contact_info', postgresql.JSONB()))
