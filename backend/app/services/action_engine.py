@@ -110,8 +110,10 @@ class ActionEngine:
     def _get_history(self, artist_id: str, days: int) -> List[StreamHistory]:
         """Get historical data for the last N days"""
         cutoff_date = datetime.utcnow() - timedelta(days=days)
+        # Convert string to UUID for comparison
+        artist_uuid = UUID(artist_id) if isinstance(artist_id, str) else artist_id
         return self.db.query(StreamHistory).filter(
-            StreamHistory.artist_id == artist_id,
+            StreamHistory.artist_id == artist_uuid,
             StreamHistory.timestamp >= cutoff_date
         ).order_by(StreamHistory.timestamp.desc()).all()
 

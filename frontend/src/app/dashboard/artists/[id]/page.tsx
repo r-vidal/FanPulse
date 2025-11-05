@@ -42,7 +42,7 @@ export default function ArtistDetailPage() {
       const [statsData, historyData, actionsData, superfansData, tracksData] = await Promise.all([
         artistDetailApi.getStats(artistId),
         artistDetailApi.getMomentumHistory(artistId, 90),
-        actionsApi.getForArtist(artistId),
+        actionsApi.getForArtist(artistId).catch(() => []),
         superfansApi.getForArtist(artistId).catch(() => []),
         artistDetailApi.getTopTracks(artistId, 10).catch(() => [])
       ])
