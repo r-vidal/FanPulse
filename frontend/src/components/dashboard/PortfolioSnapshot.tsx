@@ -14,9 +14,9 @@ interface Artist {
   id: string
   name: string
   image_url: string | null
-  momentum_score: number
+  momentum_score: number | null | undefined
   momentum_status: 'fire' | 'growing' | 'stable' | 'declining'
-  trend_7d: number | null
+  trend_7d: number | null | undefined
   total_streams: number | null | undefined
   total_superfans: number | null | undefined
 }
@@ -174,7 +174,7 @@ export function PortfolioSnapshot() {
                 {/* Momentum Score */}
                 <div className="flex items-center gap-3">
                   {/* Trend */}
-                  {artist.trend_7d !== null && (
+                  {artist.trend_7d !== null && artist.trend_7d !== undefined && (
                     <div className="text-center">
                       {getTrendIcon(artist.trend_7d)}
                       <div className={`text-xs font-medium ${
@@ -190,7 +190,7 @@ export function PortfolioSnapshot() {
                   {/* Score */}
                   <div className="text-right">
                     <div className={`text-2xl font-bold ${getMomentumTextColor(artist.momentum_status)}`}>
-                      {artist.momentum_score.toFixed(1)}
+                      {artist.momentum_score?.toFixed(1) ?? '0.0'}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">Momentum</div>
                   </div>
