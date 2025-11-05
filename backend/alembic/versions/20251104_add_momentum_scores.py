@@ -1,7 +1,7 @@
 """Add momentum_scores table
 
-Revision ID: 002_momentum_scores
-Revises: 001a_fix_alerts
+Revision ID: 007_momentum_scores
+Revises: 006_white_label_reports
 Create Date: 2025-11-04
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '002_momentum_scores'
-down_revision = '001a_fix_alerts'
+revision = '007_momentum_scores'
+down_revision = '006_white_label_reports'
 branch_labels = None
 depends_on = None
 
