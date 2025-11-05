@@ -97,7 +97,7 @@ export default function SettingsPage() {
 // Profile Section Component
 function ProfileSection() {
   const { user } = useAuthStore()
-  const [name, setName] = useState(user?.name || '')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState(user?.email || '')
   const [company, setCompany] = useState('')
   const [website, setWebsite] = useState('')
@@ -124,7 +124,7 @@ function ProfileSection() {
         </label>
         <div className="flex items-center gap-4">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {user?.email?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div className="flex-1">
             <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">

@@ -197,13 +197,13 @@ export default function ArtistDetailPage() {
                     {/* Social Media Connections */}
                     <div className="mb-4">
                       <SocialMediaConnections
-                        spotifyId={stats.spotify_id}
-                        instagramId={stats.instagram_id}
-                        youtubeId={stats.youtube_id}
-                        appleMusicId={stats.apple_music_id}
-                        tiktokId={stats.tiktok_id}
-                        twitterId={stats.twitter_id}
-                        facebookId={stats.facebook_id}
+                        spotifyId={stats.spotify_id ?? undefined}
+                        instagramId={stats.instagram_id ?? undefined}
+                        youtubeId={stats.youtube_id ?? undefined}
+                        appleMusicId={stats.apple_music_id ?? undefined}
+                        tiktokId={stats.tiktok_id ?? undefined}
+                        twitterId={stats.twitter_id ?? undefined}
+                        facebookId={stats.facebook_id ?? undefined}
                       />
                     </div>
 
