@@ -26,6 +26,10 @@ class ArtistCreate(BaseModel):
     spotify_id: Optional[str] = None
     instagram_id: Optional[str] = None
     youtube_id: Optional[str] = None
+    apple_music_id: Optional[str] = None
+    tiktok_id: Optional[str] = None
+    twitter_id: Optional[str] = None
+    facebook_id: Optional[str] = None
     image_url: Optional[str] = None
 
 
@@ -43,6 +47,10 @@ class ArtistResponse(BaseModel):
     spotify_id: Optional[str] = None
     instagram_id: Optional[str] = None
     youtube_id: Optional[str] = None
+    apple_music_id: Optional[str] = None
+    tiktok_id: Optional[str] = None
+    twitter_id: Optional[str] = None
+    facebook_id: Optional[str] = None
     image_url: Optional[str] = None
     created_at: datetime
 

@@ -29,10 +29,26 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [artists, setArtists] = useState<any[]>([])
+  const [selectedArtistId, setSelectedArtistId] = useState<string>('all')
+
+  useEffect(() => {
+    fetchArtists()
+  }, [])
 
   useEffect(() => {
     fetchDashboardData()
-  }, [])
+  }, [selectedArtistId])
+
+  const fetchArtists = async () => {
+    try {
+      const { api } = await import('@/lib/api')
+      const response = await api.get('/api/artists/')
+      setArtists(response.data)
+    } catch (err: any) {
+      console.error('Failed to fetch artists:', err)
+    }
+  }
 
   const fetchDashboardData = async () => {
     try {
@@ -108,10 +124,35 @@ export default function DashboardPage() {
         <div className="space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="mt-1 text-gray-600">
-              Welcome back, {user?.name || 'User'}! Here's your portfolio overview.
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p className="mt-1 text-gray-600">
+                  Welcome back, {user?.name || 'User'}! Here's your portfolio overview.
+                </p>
+              </div>
+              {/* Artist Filter */}
+              {artists.length > 0 && (
+                <div className="flex items-center gap-3">
+                  <label htmlFor="artist-filter" className="text-sm font-medium text-gray-700">
+                    View:
+                  </label>
+                  <select
+                    id="artist-filter"
+                    value={selectedArtistId}
+                    onChange={(e) => setSelectedArtistId(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  >
+                    <option value="all">All Artists</option>
+                    {artists.map((artist) => (
+                      <option key={artist.id} value={artist.id}>
+                        {artist.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Email Verification Notice */}

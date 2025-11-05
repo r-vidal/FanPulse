@@ -28,6 +28,15 @@ class ArtistStats(BaseModel):
     artist_image: Optional[str]
     artist_genre: Optional[str]
 
+    # Social media connections
+    spotify_id: Optional[str] = None
+    instagram_id: Optional[str] = None
+    youtube_id: Optional[str] = None
+    apple_music_id: Optional[str] = None
+    tiktok_id: Optional[str] = None
+    twitter_id: Optional[str] = None
+    facebook_id: Optional[str] = None
+
     # Current metrics
     current_momentum: float
     momentum_status: str
@@ -166,6 +175,13 @@ async def get_artist_stats(
         artist_name=artist.name,
         artist_image=artist.image_url,
         artist_genre=artist.genre,
+        spotify_id=artist.spotify_id,
+        instagram_id=artist.instagram_id,
+        youtube_id=artist.youtube_id,
+        apple_music_id=artist.apple_music_id,
+        tiktok_id=artist.tiktok_id,
+        twitter_id=artist.twitter_id,
+        facebook_id=artist.facebook_id,
         current_momentum=current_momentum,
         momentum_status=momentum_status,
         total_superfans=total_superfans,

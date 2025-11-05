@@ -16,6 +16,7 @@ import {
 import Link from 'next/link'
 import { MomentumChart } from '@/components/charts/MomentumChart'
 import { AudioPlayer } from '@/components/player/AudioPlayer'
+import { SocialMediaConnections } from '@/components/artist/SocialMediaConnections'
 
 export default function ArtistDetailPage() {
   const params = useParams()
@@ -190,8 +191,21 @@ export default function ArtistDetailPage() {
                   <div className="flex-1">
                     <h1 className="text-4xl font-bold mb-2">{stats.artist_name}</h1>
                     {stats.artist_genre && (
-                      <p className="text-blue-100 mb-4">{stats.artist_genre}</p>
+                      <p className="text-blue-100 mb-3">{stats.artist_genre}</p>
                     )}
+
+                    {/* Social Media Connections */}
+                    <div className="mb-4">
+                      <SocialMediaConnections
+                        spotifyId={stats.spotify_id}
+                        instagramId={stats.instagram_id}
+                        youtubeId={stats.youtube_id}
+                        appleMusicId={stats.apple_music_id}
+                        tiktokId={stats.tiktok_id}
+                        twitterId={stats.twitter_id}
+                        facebookId={stats.facebook_id}
+                      />
+                    </div>
 
                     {/* Momentum Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">

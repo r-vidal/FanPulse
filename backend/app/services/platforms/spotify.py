@@ -163,9 +163,11 @@ class SpotifyService(PlatformServiceBase):
                 "id": track["id"],
                 "name": track["name"],
                 "popularity": track.get("popularity", 0),
+                "streams": track.get("popularity", 0) * 10000,  # Estimate from popularity
                 "duration_ms": track.get("duration_ms", 0),
                 "preview_url": track.get("preview_url"),
-                "external_url": track.get("external_urls", {}).get("spotify"),
+                "spotify_url": track.get("external_urls", {}).get("spotify"),
+                "image_url": track.get("album", {}).get("images", [{}])[0].get("url") if track.get("album", {}).get("images") else None,
             }
             for track in response.get("tracks", [])
         ]

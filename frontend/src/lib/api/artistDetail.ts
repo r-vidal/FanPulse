@@ -6,6 +6,15 @@ export interface ArtistStats {
   artist_image: string | null
   artist_genre: string | null
 
+  // Social media connections
+  spotify_id?: string | null
+  instagram_id?: string | null
+  youtube_id?: string | null
+  apple_music_id?: string | null
+  tiktok_id?: string | null
+  twitter_id?: string | null
+  facebook_id?: string | null
+
   // Current metrics
   current_momentum: number
   momentum_status: string

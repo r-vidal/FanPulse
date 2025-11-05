@@ -14,6 +14,10 @@ export interface Artist {
   spotifyId?: string
   instagramId?: string
   youtubeId?: string
+  appleMusicId?: string
+  tiktokId?: string
+  twitterId?: string
+  facebookId?: string
   name: string
   genre: string
   imageUrl?: string
