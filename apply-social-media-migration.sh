@@ -16,8 +16,9 @@ fi
 echo "✅ Backend container is running"
 echo ""
 
-# Copy new migration file to container
-echo "📁 Copying social media migration to container..."
+# Copy new migration files to container
+echo "📁 Copying migrations to container..."
+docker compose cp backend/alembic/versions/20251105_fix_superfans_schema.py backend:/app/alembic/versions/
 docker compose cp backend/alembic/versions/20251105_add_social_media_connections.py backend:/app/alembic/versions/
 
 echo ""

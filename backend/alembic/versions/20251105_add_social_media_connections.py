@@ -1,7 +1,7 @@
 """add social media connections to artists
 
-Revision ID: 20251105_add_social_media_connections
-Revises: 20251105_fix_superfans_schema
+Revision ID: 011_add_social_media
+Revises: 010_fix_superfans_schema
 Create Date: 2025-11-05
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '20251105_add_social_media_connections'
-down_revision = '20251105_fix_superfans_schema'
+revision = '011_add_social_media'
+down_revision = '010_fix_superfans_schema'
 branch_labels = None
 depends_on = None
 
