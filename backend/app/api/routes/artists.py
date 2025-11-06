@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from uuid import UUID
 from app.core.database import get_db
@@ -8,9 +9,12 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.artist import Artist
 from app.models.platform import PlatformConnection, PlatformType
+from app.models.momentum import MomentumScore
+from app.models.superfan import Superfan
+from app.models.action import NextBestAction, ActionStatus
 from app.services.platforms.spotify import SpotifyService
 from pydantic import BaseModel, ConfigDict, field_serializer
-from datetime import datetime
+from datetime import datetime, timedelta
 import csv
 import io
 import logging
@@ -18,6 +22,72 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def enrich_artist_with_stats(artist: Artist, db: Session) -> dict:
+    """
+    Enrich an artist object with computed statistics.
+    Returns a dict with all artist fields plus computed stats.
+    """
+    # Base artist data
+    artist_dict = {
+        "id": artist.id,
+        "name": artist.name,
+        "genre": artist.genre,
+        "spotify_id": artist.spotify_id,
+        "instagram_id": artist.instagram_id,
+        "youtube_id": artist.youtube_id,
+        "apple_music_id": artist.apple_music_id,
+        "tiktok_id": artist.tiktok_id,
+        "twitter_id": artist.twitter_id,
+        "facebook_id": artist.facebook_id,
+        "image_url": artist.image_url,
+        "created_at": artist.created_at,
+        "current_momentum": 0.0,
+        "momentum_status": "stable",
+        "total_streams": 0,
+        "total_superfans": 0,
+        "pending_actions": 0
+    }
+
+    try:
+        # Get latest momentum score
+        latest_momentum = db.query(MomentumScore).filter(
+            MomentumScore.artist_id == artist.id
+        ).order_by(MomentumScore.calculated_at.desc()).first()
+
+        if latest_momentum:
+            artist_dict["current_momentum"] = latest_momentum.overall_score
+            artist_dict["momentum_status"] = latest_momentum.momentum_category or "stable"
+
+            # Get total streams from signals if available
+            if hasattr(latest_momentum, 'signals') and latest_momentum.signals:
+                signals = latest_momentum.signals
+                if isinstance(signals, dict) and 'total_streams' in signals:
+                    artist_dict["total_streams"] = int(signals.get('total_streams', 0))
+    except Exception as e:
+        logger.warning(f"Could not get momentum for artist {artist.id}: {e}")
+
+    try:
+        # Count superfans
+        superfan_count = db.query(func.count(Superfan.id)).filter(
+            Superfan.artist_id == artist.id
+        ).scalar() or 0
+        artist_dict["total_superfans"] = superfan_count
+    except Exception as e:
+        logger.warning(f"Could not count superfans for artist {artist.id}: {e}")
+
+    try:
+        # Count pending actions
+        pending_count = db.query(func.count(NextBestAction.id)).filter(
+            NextBestAction.artist_id == artist.id,
+            NextBestAction.status == ActionStatus.PENDING
+        ).scalar() or 0
+        artist_dict["pending_actions"] = pending_count
+    except Exception as e:
+        logger.warning(f"Could not count pending actions for artist {artist.id}: {e}")
+
+    return artist_dict
 
 
 class ArtistCreate(BaseModel):
@@ -53,6 +123,12 @@ class ArtistResponse(BaseModel):
     facebook_id: Optional[str] = None
     image_url: Optional[str] = None
     created_at: datetime
+    # Computed fields
+    current_momentum: float = 0.0
+    momentum_status: str = 'stable'
+    total_streams: int = 0
+    total_superfans: int = 0
+    pending_actions: int = 0
 
     @field_serializer('id')
     def serialize_id(self, value: UUID) -> str:
@@ -79,9 +155,16 @@ async def get_artists(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all artists for current user"""
+    """Get all artists for current user with computed statistics"""
     artists = db.query(Artist).filter(Artist.user_id == current_user.id).all()
-    return artists
+
+    # Enrich each artist with computed stats
+    enriched_artists = []
+    for artist in artists:
+        enriched_artist = enrich_artist_with_stats(artist, db)
+        enriched_artists.append(enriched_artist)
+
+    return enriched_artists
 
 
 @router.post("/", response_model=ArtistResponse, status_code=status.HTTP_201_CREATED)
@@ -102,7 +185,7 @@ async def create_artist(
     db.add(new_artist)
     db.commit()
     db.refresh(new_artist)
-    return new_artist
+    return enrich_artist_with_stats(new_artist, db)
 
 
 @router.get("/{artist_id}", response_model=ArtistResponse)
@@ -111,7 +194,7 @@ async def get_artist(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get a specific artist"""
+    """Get a specific artist with computed statistics"""
     artist = db.query(Artist).filter(
         Artist.id == artist_id,
         Artist.user_id == current_user.id
@@ -123,7 +206,7 @@ async def get_artist(
             detail="Artist not found"
         )
 
-    return artist
+    return enrich_artist_with_stats(artist, db)
 
 
 @router.delete("/{artist_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -267,7 +350,7 @@ async def import_spotify_artist(
         db.commit()
         db.refresh(new_artist)
 
-        return new_artist
+        return enrich_artist_with_stats(new_artist, db)
 
     except Exception as e:
         db.rollback()
