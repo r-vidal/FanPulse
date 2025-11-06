@@ -7,7 +7,8 @@ import { useAuthStore } from '@/stores/authStore'
 import {
   Home, Users, BarChart3, Settings, LogOut, Calendar, DollarSign,
   Key, FileText, Bell, Crown, ListTodo, Activity, Heart, Search,
-  Menu, X, ChevronLeft, ChevronRight
+  Menu, X, ChevronLeft, ChevronRight, Sparkles, Target, MapPin,
+  Share2, PieChart, Music
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import CommandPalette from '@/components/ui/CommandPalette'
@@ -62,6 +63,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const analyticsNavigation = [
     { name: 'Momentum', href: '/dashboard/momentum', icon: Activity },
     { name: 'Superfans', href: '/dashboard/superfans', icon: Heart },
+    { name: 'Fan Value Score', href: '/dashboard/fvs', icon: Target },
+    { name: 'Demographics', href: '/dashboard/demographics', icon: PieChart },
+    { name: 'Playlists', href: '/dashboard/playlists', icon: Music },
+    { name: 'Social ROI', href: '/dashboard/social-roi', icon: Share2 },
     { name: 'Artists', href: '/dashboard/artists', icon: Users },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   ]
@@ -70,6 +75,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { name: 'Release Optimizer', href: '/dashboard/releases', icon: Calendar },
     { name: 'Revenue Forecasting', href: '/dashboard/forecasts', icon: DollarSign },
     { name: 'Alerts', href: '/dashboard/alerts', icon: Bell },
+    { name: 'Scout Mode A&R', href: '/dashboard/scout', icon: Target },
+    { name: 'Tour Planning', href: '/dashboard/tour-planning', icon: MapPin },
+    { name: 'AI Tools Hub', href: '/dashboard/ai-tools', icon: Sparkles },
   ]
 
   const adminNavigation = [
