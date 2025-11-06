@@ -55,13 +55,18 @@ class RecentActivity(BaseModel):
 
 @router.get("/stats", response_model=DashboardStats)
 async def get_dashboard_stats(
+    artist_id: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get aggregated statistics for dashboard overview"""
 
-    # Get all user's artists
-    artists = db.query(Artist).filter(Artist.user_id == current_user.id).all()
+    # Get user's artists (filtered by artist_id if provided)
+    query = db.query(Artist).filter(Artist.user_id == current_user.id)
+    if artist_id and artist_id != 'all':
+        query = query.filter(Artist.id == artist_id)
+
+    artists = query.all()
     artist_ids = [artist.id for artist in artists]
 
     if not artist_ids:
@@ -194,13 +199,18 @@ async def get_dashboard_stats(
 @router.get("/top-performers", response_model=List[TopArtist])
 async def get_top_performers(
     limit: int = 5,
+    artist_id: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get top performing artists by momentum score"""
 
-    # Get all user's artists
-    artists = db.query(Artist).filter(Artist.user_id == current_user.id).all()
+    # Get user's artists (filtered by artist_id if provided)
+    query = db.query(Artist).filter(Artist.user_id == current_user.id)
+    if artist_id and artist_id != 'all':
+        query = query.filter(Artist.id == artist_id)
+
+    artists = query.all()
     artist_ids = [artist.id for artist in artists]
 
     if not artist_ids:
@@ -249,13 +259,18 @@ async def get_top_performers(
 @router.get("/recent-activity", response_model=List[RecentActivity])
 async def get_recent_activity(
     limit: int = 10,
+    artist_id: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get recent activity across all artists"""
 
-    # Get all user's artists
-    artists = db.query(Artist).filter(Artist.user_id == current_user.id).all()
+    # Get user's artists (filtered by artist_id if provided)
+    query = db.query(Artist).filter(Artist.user_id == current_user.id)
+    if artist_id and artist_id != 'all':
+        query = query.filter(Artist.id == artist_id)
+
+    artists = query.all()
     artist_ids = [artist.id for artist in artists]
 
     if not artist_ids:

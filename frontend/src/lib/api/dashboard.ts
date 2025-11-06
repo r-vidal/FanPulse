@@ -35,28 +35,36 @@ export const dashboardApi = {
   /**
    * Get aggregated dashboard statistics
    */
-  getStats: async (): Promise<DashboardStats> => {
-    const response = await api.get('/api/dashboard/stats')
+  getStats: async (artistId?: string): Promise<DashboardStats> => {
+    const params: any = {}
+    if (artistId && artistId !== 'all') {
+      params.artist_id = artistId
+    }
+    const response = await api.get('/api/dashboard/stats', { params })
     return response.data
   },
 
   /**
    * Get top performing artists by momentum
    */
-  getTopPerformers: async (limit: number = 5): Promise<TopArtist[]> => {
-    const response = await api.get('/api/dashboard/top-performers', {
-      params: { limit }
-    })
+  getTopPerformers: async (limit: number = 5, artistId?: string): Promise<TopArtist[]> => {
+    const params: any = { limit }
+    if (artistId && artistId !== 'all') {
+      params.artist_id = artistId
+    }
+    const response = await api.get('/api/dashboard/top-performers', { params })
     return response.data
   },
 
   /**
    * Get recent activity across all artists
    */
-  getRecentActivity: async (limit: number = 10): Promise<RecentActivity[]> => {
-    const response = await api.get('/api/dashboard/recent-activity', {
-      params: { limit }
-    })
+  getRecentActivity: async (limit: number = 10, artistId?: string): Promise<RecentActivity[]> => {
+    const params: any = { limit }
+    if (artistId && artistId !== 'all') {
+      params.artist_id = artistId
+    }
+    const response = await api.get('/api/dashboard/recent-activity', { params })
     return response.data
   }
 }
