@@ -548,3 +548,278 @@ export const mockOpportunityAlerts = (count: number = 20): OpportunityAlert[] =>
     return alert
   })
 }
+
+// Social Media ROI Mock Data
+export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'youtube' | 'facebook'
+
+export interface SocialMediaMetrics {
+  platform: SocialPlatform
+  followers: number
+  followerGrowth: number
+  engagement: {
+    likes: number
+    comments: number
+    shares: number
+    rate: number
+  }
+  posts: number
+  reach: number
+  impressions: number
+  clickThroughRate: number
+  conversions: {
+    streams: number
+    ticketsSold: number
+    merchSales: number
+  }
+  adSpend: number
+  revenue: number
+  roi: number
+  topContent: Array<{
+    id: string
+    type: 'post' | 'story' | 'reel' | 'video' | 'tweet'
+    views: number
+    engagement: number
+    date: string
+  }>
+  weeklyStats: Array<{
+    week: string
+    followers: number
+    engagement: number
+    reach: number
+  }>
+}
+
+export const mockSocialMediaROI = (): SocialMediaMetrics[] => {
+  const platforms: SocialPlatform[] = ['instagram', 'tiktok', 'twitter', 'youtube', 'facebook']
+
+  return platforms.map((platform) => {
+    const followers = randomInt(10000, 500000)
+    const posts = randomInt(20, 100)
+    const reach = randomInt(followers * 0.3, followers * 1.5)
+    const impressions = randomInt(reach * 1.5, reach * 3)
+    const likes = randomInt(reach * 0.05, reach * 0.15)
+    const comments = randomInt(likes * 0.05, likes * 0.2)
+    const shares = randomInt(comments * 0.5, comments * 2)
+    const engagementRate = randomFloat(2, 8, 2)
+
+    const adSpend = randomInt(500, 5000)
+    const streams = randomInt(1000, 50000)
+    const ticketsSold = randomInt(10, 500)
+    const merchSales = randomInt(50, 1000)
+    const revenue = streams * 0.003 + ticketsSold * 30 + merchSales * 25
+    const roi = Math.round((revenue - adSpend) / adSpend * 100)
+
+    return {
+      platform,
+      followers,
+      followerGrowth: randomFloat(-5, 25, 1),
+      engagement: {
+        likes,
+        comments,
+        shares,
+        rate: engagementRate,
+      },
+      posts,
+      reach,
+      impressions,
+      clickThroughRate: randomFloat(1, 5, 2),
+      conversions: {
+        streams,
+        ticketsSold,
+        merchSales,
+      },
+      adSpend,
+      revenue: Math.round(revenue),
+      roi,
+      topContent: Array.from({ length: 5 }, (_, i) => ({
+        id: `${platform}-content-${i + 1}`,
+        type: platform === 'instagram' ? randomItem(['post', 'story', 'reel'] as const) :
+              platform === 'tiktok' ? 'video' :
+              platform === 'twitter' ? 'tweet' :
+              'video',
+        views: randomInt(10000, 500000),
+        engagement: randomFloat(3, 12, 1),
+        date: randomDate(new Date(2024, 9, 1), new Date()).toISOString().split('T')[0],
+      })),
+      weeklyStats: Array.from({ length: 8 }, (_, i) => ({
+        week: `Week ${i + 1}`,
+        followers: Math.round(followers - (7 - i) * followers * 0.02),
+        engagement: randomFloat(2, 10, 1),
+        reach: randomInt(reach * 0.7, reach * 1.3),
+      })),
+    }
+  })
+}
+
+// AI Churn Prediction Mock Data
+export interface ChurnPrediction {
+  fanId: string
+  fanName: string
+  currentFVS: number
+  predictedFVS: number
+  churnRisk: number
+  churnDate: string
+  confidence: number
+  factors: Array<{
+    factor: string
+    impact: number
+    trend: 'increasing' | 'decreasing' | 'stable'
+  }>
+  recommendedActions: string[]
+  historicalPattern: Array<{
+    date: string
+    fvs: number
+    churnRisk: number
+  }>
+}
+
+export const mockChurnPredictions = (count: number = 20): ChurnPrediction[] => {
+  const factors = [
+    'Streaming frequency',
+    'Last engagement',
+    'Social media activity',
+    'Concert attendance',
+    'Merchandise purchases',
+    'Playlist saves',
+  ]
+
+  return Array.from({ length: count }, (_, i) => {
+    const currentFVS = randomInt(40, 90)
+    const churnRisk = randomInt(20, 90)
+    const predictedFVS = currentFVS - randomInt(10, 30)
+    const daysUntilChurn = randomInt(15, 90)
+
+    return {
+      fanId: `fan-${i + 1}`,
+      fanName: `${randomItem(artistNames)} Fan ${i + 1}`,
+      currentFVS,
+      predictedFVS: Math.max(20, predictedFVS),
+      churnRisk,
+      churnDate: new Date(Date.now() + daysUntilChurn * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      confidence: randomFloat(75, 95, 1),
+      factors: factors.slice(0, randomInt(3, 5)).map(factor => ({
+        factor,
+        impact: randomFloat(10, 40, 1),
+        trend: randomItem(['increasing', 'decreasing', 'stable'] as const),
+      })),
+      recommendedActions: [
+        'Send personalized email with exclusive content',
+        'Offer early access to new release',
+        'Target with social media ads',
+        'Invite to virtual meet & greet',
+      ].slice(0, randomInt(2, 4)),
+      historicalPattern: Array.from({ length: 12 }, (_, j) => ({
+        date: new Date(Date.now() - (11 - j) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        fvs: randomInt(currentFVS - 20, currentFVS + 5),
+        churnRisk: randomInt(churnRisk - 15, churnRisk + 10),
+      })),
+    }
+  })
+}
+
+// AI Caption Generator Mock Data
+export interface GeneratedCaption {
+  id: string
+  platform: 'instagram' | 'tiktok' | 'twitter' | 'facebook'
+  caption: string
+  hashtags: string[]
+  tone: 'casual' | 'professional' | 'playful' | 'inspirational' | 'promotional'
+  length: 'short' | 'medium' | 'long'
+  emoji: boolean
+  callToAction: string
+  estimatedEngagement: number
+  viralScore: number
+}
+
+export const mockCaptionGeneration = (context: string, platform: SocialPlatform, tone: string): GeneratedCaption[] => {
+  const hashtagsByPlatform = {
+    instagram: ['#NewMusic', '#IndieArtist', '#MusicProducer', '#InstaMusic', '#MusicLife'],
+    tiktok: ['#fyp', '#viral', '#newmusic', '#artist', '#trending'],
+    twitter: ['#NowPlaying', '#NewMusicFriday', '#IndieMusic', '#MusicPromotion'],
+    youtube: ['#Subscribe', '#MusicVideo', '#NewRelease', '#Artist'],
+    facebook: ['#Music', '#Live', '#Concert', '#NewAlbum'],
+  }
+
+  const captions = [
+    `Just dropped something special 🎵 ${context}. Link in bio! What do you think?`,
+    `New vibes incoming 🔥 ${context}. Stream now and let me know your favorite part!`,
+    `This one's been in the vault for a minute... ${context} 🎶 Finally ready to share it with you all`,
+    `Working on something big 💫 ${context}. Drop a 🔥 if you're ready for this`,
+    `Late nights, early mornings, and a lot of coffee ☕ ${context}. Worth it? You tell me`,
+  ]
+
+  return Array.from({ length: 3 }, (_, i) => ({
+    id: `caption-${i + 1}`,
+    platform: platform as 'instagram' | 'tiktok' | 'twitter' | 'facebook',
+    caption: randomItem(captions),
+    hashtags: hashtagsByPlatform[platform] || [],
+    tone: tone as 'casual' | 'professional' | 'playful' | 'inspirational' | 'promotional',
+    length: randomItem(['short', 'medium', 'long'] as const),
+    emoji: Math.random() > 0.3,
+    callToAction: randomItem([
+      'Link in bio',
+      'Stream now',
+      'Pre-save today',
+      'Comment below',
+      'Tag a friend',
+    ]),
+    estimatedEngagement: randomFloat(3, 12, 1),
+    viralScore: randomInt(40, 95),
+  }))
+}
+
+// AI Collaboration Finder Mock Data
+export interface CollabMatch {
+  artistId: string
+  artistName: string
+  genre: string[]
+  followers: number
+  monthlyListeners: number
+  matchScore: number
+  compatibility: {
+    musical: number
+    audience: number
+    brand: number
+    geographic: number
+  }
+  sharedAudience: number
+  projectedReach: number
+  estimatedROI: number
+  reasoning: string[]
+  previousCollabs: string[]
+  availability: 'available' | 'busy' | 'interested'
+}
+
+export const mockCollabMatches = (count: number = 15): CollabMatch[] => {
+  return Array.from({ length: count }, (_, i) => {
+    const followers = randomInt(50000, 1000000)
+    const monthlyListeners = randomInt(100000, 2000000)
+    const matchScore = randomInt(60, 98)
+
+    return {
+      artistId: `collab-artist-${i + 1}`,
+      artistName: `${randomItem(artistNames)} Artist ${i + 1}`,
+      genre: [randomItem(genres), randomItem(genres)],
+      followers,
+      monthlyListeners,
+      matchScore,
+      compatibility: {
+        musical: randomInt(70, 100),
+        audience: randomInt(65, 95),
+        brand: randomInt(60, 90),
+        geographic: randomInt(55, 85),
+      },
+      sharedAudience: randomFloat(15, 45, 1),
+      projectedReach: Math.round(monthlyListeners * randomFloat(1.3, 2.5)),
+      estimatedROI: randomInt(150, 500),
+      reasoning: [
+        `${randomInt(15, 45)}% shared audience overlap`,
+        'Similar musical style with complementary strengths',
+        `Both trending in ${randomItem(cities).city} market`,
+        'Compatible touring schedules for 2025',
+      ],
+      previousCollabs: Array.from({ length: randomInt(2, 5) }, () => randomItem(artistNames)),
+      availability: randomItem(['available', 'busy', 'interested'] as const),
+    }
+  }).sort((a, b) => b.matchScore - a.matchScore)
+}
