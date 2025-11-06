@@ -415,3 +415,136 @@ export const mockTourPlanning = (): TourSuggestion[] => {
     }
   })
 }
+
+// Opportunity Alerts Mock Data
+export type AlertType = 'playlist' | 'viral' | 'collab' | 'sync' | 'tour' | 'media' | 'trending'
+export type AlertPriority = 'critical' | 'high' | 'medium' | 'low'
+export type AlertStatus = 'new' | 'read' | 'acted'
+
+export interface OpportunityAlert {
+  id: string
+  type: AlertType
+  priority: AlertPriority
+  status: AlertStatus
+  title: string
+  description: string
+  actionUrl?: string
+  timestamp: string
+  expiresAt?: string
+  metadata?: {
+    playlistName?: string
+    artistName?: string
+    platform?: string
+    value?: number
+  }
+}
+
+export const mockOpportunityAlerts = (count: number = 20): OpportunityAlert[] => {
+  const alertTypes: AlertType[] = ['playlist', 'viral', 'collab', 'sync', 'tour', 'media', 'trending']
+  const priorities: AlertPriority[] = ['critical', 'high', 'medium', 'low']
+  const statuses: AlertStatus[] = ['new', 'read', 'acted']
+
+  const templates: Record<AlertType, { titles: string[]; descriptions: string[] }> = {
+    playlist: {
+      titles: ['Editorial Playlist Opportunity', 'Playlist Curator Interest', 'Featured Playlist Spot'],
+      descriptions: [
+        'Your track "Summer Nights" fits perfectly with Today\'s Hits playlist (3.2M followers)',
+        'Indie Vibes curator wants to add your latest single to their 500K follower playlist',
+        'Spotify editorial team interested in featuring your music on New Music Friday',
+      ],
+    },
+    viral: {
+      titles: ['Viral Trend Detected', 'TikTok Explosion', 'Trending on Social Media'],
+      descriptions: [
+        'Your track is being used in 15K+ TikTok videos in the last 48 hours (+450% growth)',
+        'Instagram Reels featuring your song grew 320% this week',
+        'Trending hashtag #YourSongChallenge has 2.5M+ views',
+      ],
+    },
+    collab: {
+      titles: ['Collaboration Request', 'Feature Opportunity', 'Remix Request'],
+      descriptions: [
+        'Artist with 500K monthly listeners interested in collaboration',
+        'Producer with platinum records wants to remix your track',
+        'DJ requesting stems for official remix (150K followers)',
+      ],
+    },
+    sync: {
+      titles: ['Sync Licensing Opportunity', 'TV Show Interest', 'Commercial License Request'],
+      descriptions: [
+        'Netflix series producer interested in licensing your track for Season 3',
+        'Major brand campaign seeking indie music (budget: €15K-€25K)',
+        'Video game developer wants to feature your music (AAA title)',
+      ],
+    },
+    tour: {
+      titles: ['Tour Booking Offer', 'Festival Slot Available', 'Support Act Opportunity'],
+      descriptions: [
+        'Opening slot for major artist tour in Europe (20 dates, Summer 2025)',
+        'Music festival in Berlin has last-minute slot available (June 15)',
+        'Venue booking offer: 1000-capacity club in Paris (guaranteed €5K)',
+      ],
+    },
+    media: {
+      titles: ['Interview Request', 'Press Coverage', 'Radio Play Opportunity'],
+      descriptions: [
+        'Major music blog wants to feature your story (500K monthly readers)',
+        'Radio station requesting interview for morning show (2M listeners)',
+        'Podcast interview offer: Top 10 music industry podcast',
+      ],
+    },
+    trending: {
+      titles: ['Trending Alert', 'Breakout Moment', 'Momentum Spike'],
+      descriptions: [
+        'Your FVS score jumped 15 points in 24 hours - capitalize now!',
+        'Fan engagement up 280% this week - perfect time for announcement',
+        'Monthly listeners grew 45% - consider increasing ad spend',
+      ],
+    },
+  }
+
+  return Array.from({ length: count }, (_, i) => {
+    const type = randomItem(alertTypes)
+    const priority = randomItem(priorities)
+    const status = i < 3 ? 'new' : randomItem(statuses)
+    const template = templates[type]
+    const title = randomItem(template.titles)
+    const description = randomItem(template.descriptions)
+    const hoursAgo = randomInt(0, 168) // 0-7 days
+    const timestamp = new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString()
+
+    const alert: OpportunityAlert = {
+      id: `alert-${i + 1}`,
+      type,
+      priority,
+      status,
+      title,
+      description,
+      timestamp,
+    }
+
+    // Add expiration for time-sensitive opportunities
+    if (['playlist', 'tour', 'media', 'sync'].includes(type)) {
+      const daysUntilExpiry = randomInt(3, 14)
+      alert.expiresAt = new Date(Date.now() + daysUntilExpiry * 24 * 60 * 60 * 1000).toISOString()
+    }
+
+    // Add metadata
+    if (type === 'playlist') {
+      alert.metadata = {
+        playlistName: randomItem(playlists).name,
+        platform: 'Spotify',
+      }
+    } else if (type === 'collab') {
+      alert.metadata = {
+        artistName: randomItem(artistNames),
+      }
+    } else if (type === 'sync') {
+      alert.metadata = {
+        value: randomInt(10000, 50000),
+      }
+    }
+
+    return alert
+  })
+}
