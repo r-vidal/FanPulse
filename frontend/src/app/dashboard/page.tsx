@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
@@ -21,6 +22,7 @@ import {
 import { SpotifyPlayerWidget } from '@/components/player/SpotifyPlayerWidget'
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { user } = useAuthStore()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [topPerformers, setTopPerformers] = useState<TopArtist[]>([])
@@ -116,6 +118,16 @@ export default function DashboardPage() {
     return `${diffDays}d ago`
   }
 
+  const handleArtistFilterChange = (artistId: string) => {
+    if (artistId === 'all') {
+      // Stay on dashboard for "All Artists" view
+      setSelectedArtistId(artistId)
+    } else {
+      // Redirect to artist detail page for specific artist
+      router.push(`/dashboard/artists/${artistId}`)
+    }
+  }
+
   return (
     <ProtectedRoute>
       <DashboardLayout>
@@ -132,12 +144,12 @@ export default function DashboardPage() {
             {artists.length > 0 && (
               <div className="flex items-center gap-3">
                 <label htmlFor="artist-filter" className="text-sm font-medium text-gray-700">
-                  Filter by:
+                  View:
                 </label>
                 <select
                   id="artist-filter"
                   value={selectedArtistId}
-                  onChange={(e) => setSelectedArtistId(e.target.value)}
+                  onChange={(e) => handleArtistFilterChange(e.target.value)}
                   className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 font-medium shadow-sm hover:border-gray-400 transition-colors"
                 >
                   <option value="all">All Artists</option>
