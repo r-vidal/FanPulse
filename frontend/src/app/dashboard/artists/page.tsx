@@ -1,52 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Alert from '@/components/ui/Alert'
-import { SkeletonCard } from '@/components/ui/Skeleton'
+import { SkeletonArtistGrid, SkeletonDashboardStats } from '@/components/ui/Skeleton'
 import {
   Music, TrendingUp, Heart, Play, Users, ArrowRight,
   Plus, BarChart3, Activity
 } from 'lucide-react'
 import Link from 'next/link'
-import { api } from '@/lib/api'
-
-interface Artist {
-  id: string
-  name: string
-  spotify_id: string | null
-  image_url: string | null
-  genre: string | null
-  current_momentum: number
-  momentum_status: string
-  total_streams: number
-  total_superfans: number
-  pending_actions: number
-}
+import { useArtists } from '@/hooks/useArtists'
 
 export default function ArtistsPage() {
-  const [artists, setArtists] = useState<Artist[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchArtists()
-  }, [])
-
-  const fetchArtists = async () => {
-    try {
-      setLoading(true)
-      const response = await api.get('/api/artists/')
-      setArtists(response.data)
-      setError(null)
-    } catch (err: any) {
-      console.error('Failed to fetch artists:', err)
-      setError('Failed to load artists')
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Use React Query for automatic caching, refetching, and loading states
+  const { data: artists = [], isLoading, error, refetch } = useArtists()
 
   const formatNumber = (num: number | undefined | null): string => {
     if (num == null || isNaN(num)) return '0'
@@ -99,17 +66,16 @@ export default function ArtistsPage() {
           {/* Error Alert */}
           {error && (
             <Alert type="error" title="Error">
-              {error}
+              {error instanceof Error ? error.message : 'Failed to load artists'}
             </Alert>
           )}
 
-          {/* Artists Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
+          {/* Loading State with proper skeleton screens */}
+          {isLoading ? (
+            <>
+              <SkeletonDashboardStats />
+              <SkeletonArtistGrid count={6} />
+            </>
           ) : artists.length === 0 ? (
             /* Empty State */
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">

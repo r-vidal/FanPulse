@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
-import { api } from '@/lib/api'
+import { useArtists, useRefreshArtists } from '@/hooks/useArtists'
 import {
   Home,
   Users,
@@ -20,13 +20,14 @@ import {
   Music,
   Zap,
   TrendingUp,
+  RefreshCw,
+  Download,
+  Share2,
+  Moon,
+  Sun,
+  LogOut,
 } from 'lucide-react'
-
-interface Artist {
-  id: string
-  name: string
-  image_url: string | null
-}
+import { useTheme } from 'next-themes'
 
 interface Props {
   isOpen: boolean
@@ -36,8 +37,11 @@ interface Props {
 export default function CommandPalette({ isOpen, onClose }: Props) {
   const router = useRouter()
   const [search, setSearch] = useState('')
-  const [artists, setArtists] = useState<Artist[]>([])
-  const [loading, setLoading] = useState(false)
+  const { theme, setTheme } = useTheme()
+
+  // Use React Query hooks for automatic caching and updates
+  const { data: artists = [], isLoading: loading } = useArtists()
+  const refreshArtists = useRefreshArtists()
 
   // Navigation items
   const pages = [
@@ -54,24 +58,27 @@ export default function CommandPalette({ isOpen, onClose }: Props) {
     { name: 'Settings', href: '/dashboard/settings', icon: Settings, category: 'Navigate' },
   ]
 
-  // Load artists when opening
-  useEffect(() => {
-    if (isOpen && artists.length === 0) {
-      loadArtists()
-    }
-  }, [isOpen])
-
-  const loadArtists = async () => {
-    try {
-      setLoading(true)
-      const response = await api.get('/api/artists/')
-      setArtists(response.data)
-    } catch (err) {
-      console.error('Failed to load artists:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // System actions
+  const systemActions = [
+    {
+      name: 'Refresh Dashboard',
+      icon: RefreshCw,
+      action: () => {
+        refreshArtists()
+        // Add toast notification here if available
+      },
+    },
+    {
+      name: 'Toggle Dark Mode',
+      icon: theme === 'dark' ? Sun : Moon,
+      action: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+    },
+    {
+      name: 'Export Data',
+      icon: Download,
+      action: () => router.push('/dashboard/reports'),
+    },
+  ]
 
   const handleSelect = (callback: () => void) => {
     callback()
@@ -183,6 +190,21 @@ export default function CommandPalette({ isOpen, onClose }: Props) {
                     <p className="text-xs text-gray-500 dark:text-gray-400">Connect a new artist profile</p>
                   </div>
                 </Command.Item>
+
+                {systemActions.map((action) => {
+                  const Icon = action.icon
+                  return (
+                    <Command.Item
+                      key={action.name}
+                      value={action.name}
+                      onSelect={() => handleSelect(action.action)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/30 aria-selected:bg-amber-50 dark:aria-selected:bg-amber-900/30 transition-colors"
+                    >
+                      <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <span className="font-medium text-gray-900 dark:text-white">{action.name}</span>
+                    </Command.Item>
+                  )
+                })}
               </Command.Group>
             )}
           </Command.List>
