@@ -42,21 +42,58 @@ function ToastItem({ toast }: { toast: ToastType }) {
     }
   }, [toast.id])
 
+  // Priority-based styling
+  const priorityClasses = {
+    critical: 'ring-4 ring-red-500/50 dark:ring-red-400/50 shadow-2xl',
+    high: 'ring-2 ring-gray-300/50 dark:ring-gray-600/50 shadow-xl',
+    low: 'shadow-lg',
+  }
+
+  const priorityBorder = {
+    critical: 'border-l-8',
+    high: 'border-l-6',
+    low: 'border-l-4',
+  }
+
+  const priority = toast.priority || 'low'
+
   return (
     <div
       id={`toast-${toast.id}`}
-      className={`flex items-start gap-3 p-4 rounded-lg border-l-4 shadow-lg ${styles[toast.type]} transform transition-all duration-300`}
+      className={`flex flex-col gap-2 p-4 rounded-lg ${priorityBorder[priority]} ${priorityClasses[priority]} ${styles[toast.type]} transform transition-all duration-300`}
       role="alert"
+      aria-live={priority === 'critical' ? 'assertive' : 'polite'}
+      aria-atomic="true"
     >
-      <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" />
-      <p className="flex-1 text-sm font-medium">{toast.message}</p>
-      <button
-        onClick={() => removeToast(toast.id)}
-        className="flex-shrink-0 hover:opacity-70 transition-opacity"
-        aria-label="Close"
-      >
-        <X className="w-4 h-4" />
-      </button>
+      <div className="flex items-start gap-3">
+        <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="text-sm font-medium">{toast.message}</p>
+          {priority === 'critical' && (
+            <p className="text-xs mt-1 opacity-80">This notification requires your attention</p>
+          )}
+        </div>
+        <button
+          onClick={() => removeToast(toast.id)}
+          className="flex-shrink-0 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-current rounded"
+          aria-label="Dismiss notification"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Action button if provided */}
+      {toast.action && (
+        <button
+          onClick={() => {
+            toast.action?.onClick()
+            removeToast(toast.id)
+          }}
+          className="text-xs font-semibold underline hover:no-underline transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-current rounded px-1"
+        >
+          {toast.action.label}
+        </button>
+      )}
     </div>
   )
 }
