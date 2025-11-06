@@ -13,6 +13,7 @@ import {
 import Button from '@/components/ui/Button'
 import CommandPalette from '@/components/ui/CommandPalette'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import ArtistSelector from '@/components/ui/ArtistSelector'
 import { useCommandPalette } from '@/hooks/useCommandPalette'
 
 interface DashboardLayoutProps {
@@ -268,18 +269,28 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       >
         {/* Header */}
         <header className="bg-white dark:bg-gray-900 shadow-sm h-16 flex items-center justify-between px-4 lg:px-8 border-b dark:border-gray-800 sticky top-0 z-20">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+          {/* Left: Mobile Menu + Title */}
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
 
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white hidden lg:block">FanPulse</h1>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white lg:hidden">🎵</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white hidden lg:block">FanPulse</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white lg:hidden">🎵</h1>
+          </div>
 
-          {/* Actions */}
+          {/* Center: Artist Selector */}
+          <div className="flex-1 flex items-center justify-center px-4">
+            <div className="max-w-xs w-full">
+              <ArtistSelector />
+            </div>
+          </div>
+
+          {/* Right: Actions */}
           <div className="flex items-center gap-3">
             {/* Theme Toggle */}
             <ThemeToggle />
@@ -287,7 +298,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             {/* Search Command Palette Button */}
             <button
               onClick={() => setIsOpen(true)}
-              className="flex items-center gap-2 px-3 lg:px-4 py-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 lg:px-4 py-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <Search className="w-4 h-4" />
               <span className="hidden md:inline">Search</span>

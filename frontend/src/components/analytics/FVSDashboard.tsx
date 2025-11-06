@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { mockFVSData } from '@/lib/mockData'
+import { useArtistContext } from '@/contexts/ArtistContext'
+import AnalyticsPageHeader from '@/components/ui/AnalyticsPageHeader'
 import { TrendingUp, TrendingDown, Music, Heart, DollarSign, Users, Zap, Info } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 
@@ -11,8 +13,11 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
  *
  * Mock data until backend API: GET /api/analytics/{artist_id}/fvs
  */
-export default function FVSDashboard({ artistId }: { artistId?: string }) {
-  // TODO: Replace with real API call when ready
+export default function FVSDashboard({ artistId: propArtistId }: { artistId?: string }) {
+  const { selectedArtist } = useArtistContext()
+  const artistId = propArtistId || selectedArtist?.id
+
+  // TODO: Replace with real API call when ready - will use artistId parameter
   const [data] = useState(mockFVSData())
 
   const scoreColor = data.score >= 80 ? 'text-green-600 dark:text-green-400' :
@@ -43,6 +48,9 @@ export default function FVSDashboard({ artistId }: { artistId?: string }) {
 
   return (
     <div className="space-y-6">
+      {/* Artist Selection Header */}
+      <AnalyticsPageHeader />
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
