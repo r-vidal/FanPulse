@@ -8,7 +8,7 @@ import {
   Home, Users, BarChart3, Settings, LogOut, Calendar, DollarSign,
   Key, FileText, Bell, Crown, ListTodo, Activity, Heart, Search,
   Menu, X, ChevronLeft, ChevronRight, Sparkles, Target, MapPin,
-  Share2, PieChart, Music
+  Share2, PieChart, Music, Brain
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import CommandPalette from '@/components/ui/CommandPalette'
@@ -73,6 +73,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   ]
 
   const proNavigation = [
+    { name: 'AI Dashboard', href: '/dashboard/ai', icon: Brain },
     { name: 'Release Optimizer', href: '/dashboard/releases', icon: Calendar },
     { name: 'Revenue Forecasting', href: '/dashboard/forecasts', icon: DollarSign },
     { name: 'Alerts', href: '/dashboard/alerts', icon: Bell },
