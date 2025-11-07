@@ -14,13 +14,18 @@ import { useState } from 'react'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuthStore } from '@/stores/authStore'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import PlanComparison from '@/components/settings/PlanComparison'
 import {
   User,
   Bell,
   Link as LinkIcon,
   CreditCard,
   Shield,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Sparkles,
+  Zap,
+  Crown
 } from 'lucide-react'
 
 type Tab = 'profile' | 'notifications' | 'platforms' | 'billing' | 'security'
@@ -347,78 +352,81 @@ function PlatformsSection() {
 
 // Billing Section Component
 function BillingSection() {
-  const { user } = useAuthStore()
+  const [showComparison, setShowComparison] = useState(false)
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Billing & Subscription</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Manage your subscription and payment methods
-        </p>
-      </div>
-
-      {/* Current Plan */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg border border-blue-200 dark:border-blue-800 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 uppercase">
-              {user?.subscription_tier || 'SOLO'} Plan
-            </h3>
-            <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-              €199/month • Billed monthly
-            </p>
-          </div>
-          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-sm font-semibold rounded-full">
-            Active
-          </span>
-        </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-            Upgrade Plan
-          </button>
-          <button className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium">
-            Manage Subscription
-          </button>
-        </div>
-      </div>
-
-      {/* Usage Stats */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Usage This Month</h3>
-        <div className="space-y-4">
-          <UsageBar label="Artists" current={2} max={3} />
-          <UsageBar label="API Calls" current={12500} max={50000} />
-          <UsageBar label="Storage" current={250} max={1000} unit="MB" />
-        </div>
-      </div>
-
-      {/* Payment Method */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="flex items-center gap-3">
-            <CreditCard className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+    <div className="max-w-5xl space-y-6">
+      {!showComparison ? (
+        <>
+          <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900 dark:text-white">Visa •••• 4242</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Expires 12/2025</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Billing & Subscription</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Manage your subscription and payment methods
+              </p>
+            </div>
+            <button
+              onClick={() => setShowComparison(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+            >
+              View All Plans
+            </button>
+          </div>
+
+          <CurrentPlanCard onViewPlans={() => setShowComparison(true)} />
+
+          {/* Usage Stats */}
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Usage This Month</h3>
+            <UsageStats />
+          </div>
+
+          {/* Payment Method */}
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center gap-3">
+                <CreditCard className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">Visa •••• 4242</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Expires 12/2025</p>
+                </div>
+              </div>
+              <button className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                Update
+              </button>
             </div>
           </div>
-          <button className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-            Update
-          </button>
-        </div>
-      </div>
 
-      {/* Invoices */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Recent Invoices</h3>
-        <div className="space-y-3">
-          <InvoiceRow date="Nov 1, 2025" amount="€199.00" status="paid" />
-          <InvoiceRow date="Oct 1, 2025" amount="€199.00" status="paid" />
-          <InvoiceRow date="Sep 1, 2025" amount="€199.00" status="paid" />
-        </div>
-      </div>
+          {/* Invoices */}
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Recent Invoices</h3>
+            <div className="space-y-3">
+              <InvoiceRow date="Nov 1, 2025" amount="€199.00" status="paid" />
+              <InvoiceRow date="Oct 1, 2025" amount="€199.00" status="paid" />
+              <InvoiceRow date="Sep 1, 2025" amount="€199.00" status="paid" />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">All Plans</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Compare and switch between plans
+              </p>
+            </div>
+            <button
+              onClick={() => setShowComparison(false)}
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 text-sm font-medium"
+            >
+              Back to Billing
+            </button>
+          </div>
+          <PlanComparisonWrapper />
+        </>
+      )}
     </div>
   )
 }
@@ -484,6 +492,135 @@ function SecuritySection() {
 }
 
 // Helper Components
+
+// Current Plan Card Component
+function CurrentPlanCard({ onViewPlans }: { onViewPlans: () => void }) {
+  const { currentPlan, currentTier } = useSubscription()
+
+  const getPlanIcon = () => {
+    switch (currentTier) {
+      case 'free':
+        return <Sparkles className="w-6 h-6" />
+      case 'pro':
+        return <Zap className="w-6 h-6" />
+      case 'enterprise':
+        return <Crown className="w-6 h-6" />
+    }
+  }
+
+  const getPlanColor = () => {
+    switch (currentTier) {
+      case 'free':
+        return {
+          bg: 'from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30',
+          border: 'border-blue-200 dark:border-blue-800',
+          text: 'text-blue-900 dark:text-blue-100',
+          subtext: 'text-blue-700 dark:text-blue-300',
+          icon: 'bg-blue-600',
+        }
+      case 'pro':
+        return {
+          bg: 'from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30',
+          border: 'border-purple-200 dark:border-purple-800',
+          text: 'text-purple-900 dark:text-purple-100',
+          subtext: 'text-purple-700 dark:text-purple-300',
+          icon: 'bg-purple-600',
+        }
+      case 'enterprise':
+        return {
+          bg: 'from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30',
+          border: 'border-yellow-200 dark:border-yellow-800',
+          text: 'text-yellow-900 dark:text-yellow-100',
+          subtext: 'text-yellow-700 dark:text-yellow-300',
+          icon: 'bg-yellow-600',
+        }
+    }
+  }
+
+  const colors = getPlanColor()
+
+  return (
+    <div className={`bg-gradient-to-br ${colors.bg} rounded-lg border ${colors.border} p-6`}>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start gap-4">
+          <div className={`w-12 h-12 ${colors.icon} rounded-xl flex items-center justify-center text-white`}>
+            {getPlanIcon()}
+          </div>
+          <div>
+            <h3 className={`text-xl font-bold ${colors.text} uppercase`}>
+              {currentPlan.displayName} Plan
+            </h3>
+            <p className={`text-sm ${colors.subtext} mt-1`}>
+              {currentPlan.price === 0
+                ? 'Free forever'
+                : `€${currentPlan.price}/month • Billed monthly`}
+            </p>
+          </div>
+        </div>
+        <span className="px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-sm font-semibold rounded-full">
+          Active
+        </span>
+      </div>
+
+      <p className={`text-sm ${colors.subtext} mb-4`}>
+        {currentPlan.description}
+      </p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={onViewPlans}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+        >
+          {currentTier === 'free' ? 'Upgrade Plan' : 'Switch Plan'}
+        </button>
+        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium">
+          Manage Subscription
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Usage Stats Component
+function UsageStats() {
+  const { currentPlan } = useSubscription()
+
+  return (
+    <div className="space-y-4">
+      <UsageBar
+        label="Artists"
+        current={2}
+        max={currentPlan.limits.artists === -1 ? 100 : currentPlan.limits.artists}
+        isUnlimited={currentPlan.limits.artists === -1}
+      />
+      <UsageBar
+        label="API Calls"
+        current={12500}
+        max={currentPlan.limits.apiCallsPerMonth === -1 ? 100000 : currentPlan.limits.apiCallsPerMonth}
+        isUnlimited={currentPlan.limits.apiCallsPerMonth === -1}
+      />
+      <UsageBar
+        label="Storage"
+        current={250}
+        max={currentPlan.limits.storageGB === -1 ? 1000 : currentPlan.limits.storageGB * 1000}
+        unit="MB"
+        isUnlimited={currentPlan.limits.storageGB === -1}
+      />
+      <UsageBar
+        label="Team Members"
+        current={1}
+        max={currentPlan.limits.teamMembers === -1 ? 10 : currentPlan.limits.teamMembers}
+        isUnlimited={currentPlan.limits.teamMembers === -1}
+      />
+    </div>
+  )
+}
+
+// Plan Comparison Wrapper Component
+function PlanComparisonWrapper() {
+  return <PlanComparison showDevSwitch={true} />
+}
+
 function NotificationToggle({ label, description, defaultChecked }: { label: string; description?: string; defaultChecked: boolean }) {
   return (
     <div className="flex items-center justify-between py-2">
@@ -535,23 +672,35 @@ function PlatformCard({ name, status, description, tier }: { name: string; statu
   )
 }
 
-function UsageBar({ label, current, max, unit = '' }: { label: string; current: number; max: number; unit?: string }) {
+function UsageBar({ label, current, max, unit = '', isUnlimited = false }: { label: string; current: number; max: number; unit?: string; isUnlimited?: boolean }) {
   const percentage = (current / max) * 100
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
         <span className="text-sm text-gray-600 dark:text-gray-400">
-          {current.toLocaleString()} / {max.toLocaleString()} {unit}
+          {isUnlimited ? (
+            <>
+              {current.toLocaleString()} {unit} <span className="text-green-600 dark:text-green-400 font-semibold">/ Unlimited</span>
+            </>
+          ) : (
+            <>
+              {current.toLocaleString()} / {max.toLocaleString()} {unit}
+            </>
+          )}
         </span>
       </div>
       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-        <div
-          className={`h-2 rounded-full transition-all ${
-            percentage > 80 ? 'bg-red-500' : percentage > 50 ? 'bg-yellow-500' : 'bg-green-500'
-          }`}
-          style={{ width: `${percentage}%` }}
-        />
+        {isUnlimited ? (
+          <div className="h-2 rounded-full bg-green-500 w-full" />
+        ) : (
+          <div
+            className={`h-2 rounded-full transition-all ${
+              percentage > 80 ? 'bg-red-500' : percentage > 50 ? 'bg-yellow-500' : 'bg-green-500'
+            }`}
+            style={{ width: `${percentage}%` }}
+          />
+        )}
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { ArtistProvider } from '@/contexts/ArtistContext'
+import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
 import { ReactNode } from 'react'
 
 export default function DashboardRootLayout({
@@ -6,5 +7,9 @@ export default function DashboardRootLayout({
 }: {
   children: ReactNode
 }) {
-  return <ArtistProvider>{children}</ArtistProvider>
+  return (
+    <SubscriptionProvider>
+      <ArtistProvider>{children}</ArtistProvider>
+    </SubscriptionProvider>
+  )
 }
