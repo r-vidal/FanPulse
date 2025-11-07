@@ -79,7 +79,7 @@ async def scan_new_releases(
     country: str = Query(default="US", description="Country code (ISO 3166-1)"),
     limit: int = Query(default=50, ge=1, le=100, description="Number of releases to scan"),
     genres: Optional[str] = Query(default=None, description="Comma-separated genres to filter"),
-    current_user = Depends(deps.get_current_active_user),
+    current_user = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db)
 ):
     """
@@ -154,7 +154,7 @@ async def scan_new_releases(
 async def scan_by_genre(
     genre: str,
     limit: int = Query(default=20, ge=1, le=50),
-    current_user = Depends(deps.get_current_active_user),
+    current_user = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db)
 ):
     """
@@ -210,7 +210,7 @@ async def scan_by_genre(
 @router.get("/artist/{spotify_id}/potential", response_model=ArtistPotentialScore)
 async def get_artist_potential(
     spotify_id: str,
-    current_user = Depends(deps.get_current_active_user),
+    current_user = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db)
 ):
     """
@@ -308,7 +308,7 @@ async def get_artist_potential(
 
 @router.get("/tags", response_model=dict)
 async def get_available_tags(
-    current_user = Depends(deps.get_current_active_user)
+    current_user = Depends(deps.get_current_user)
 ):
     """
     Get list of all available tags used in Scout A&R
@@ -340,7 +340,7 @@ async def get_available_tags(
 @router.post("/watchlist/add/{spotify_id}")
 async def add_to_watchlist(
     spotify_id: str,
-    current_user = Depends(deps.get_current_active_user),
+    current_user = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db)
 ):
     """
@@ -361,7 +361,7 @@ async def add_to_watchlist(
 @router.delete("/watchlist/remove/{spotify_id}")
 async def remove_from_watchlist(
     spotify_id: str,
-    current_user = Depends(deps.get_current_active_user),
+    current_user = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db)
 ):
     """Remove artist from A&R watchlist"""
