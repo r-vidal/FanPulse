@@ -5,10 +5,11 @@ Detects if music is AI-generated using audio analysis
 
 import logging
 import requests
-import numpy as np
-from typing import Tuple, Optional
-import librosa
+from typing import Tuple, Optional, TYPE_CHECKING
 import io
+
+if TYPE_CHECKING:
+    import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,10 @@ class AIMusicDetector:
             Tuple of (is_ai_generated: bool, confidence: float)
         """
         try:
+            # Lazy import - only load when actually using AI detection
+            import librosa
+            import numpy as np
+
             logger.info(f"Analyzing audio from: {audio_url}")
 
             # Download audio
@@ -64,8 +69,12 @@ class AIMusicDetector:
             logger.error(f"Error detecting AI music: {e}")
             return False, 0.0
 
-    def _extract_features(self, y: np.ndarray, sr: int) -> dict:
+    def _extract_features(self, y: 'np.ndarray', sr: int) -> dict:
         """Extract audio features for analysis"""
+        # Lazy import
+        import librosa
+        import numpy as np
+
         features = {}
 
         try:

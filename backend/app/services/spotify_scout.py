@@ -11,7 +11,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.services.ai_music_detector import AIMusicDetector
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,15 @@ class SpotifyScout:
             client_id=settings.SPOTIFY_CLIENT_ID,
             client_secret=settings.SPOTIFY_CLIENT_SECRET
         ))
-        self.ai_detector = AIMusicDetector()
+        self._ai_detector = None  # Lazy initialization
+
+    @property
+    def ai_detector(self):
+        """Lazy load AI detector only when needed"""
+        if self._ai_detector is None:
+            from app.services.ai_music_detector import AIMusicDetector
+            self._ai_detector = AIMusicDetector()
+        return self._ai_detector
 
     def scan_new_releases(
         self,
