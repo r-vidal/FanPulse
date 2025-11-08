@@ -90,6 +90,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const isPro = user?.subscription_tier === 'pro' || user?.subscription_tier === 'label' || user?.subscription_tier === 'enterprise'
 
+  // Debug logging for Scout Mode visibility issue
+  useEffect(() => {
+    console.log('🔍 DashboardLayout Debug:', {
+      user: user,
+      subscription_tier: user?.subscription_tier,
+      isPro: isPro,
+      shouldShowScout: isPro ? 'YES' : 'NO'
+    })
+  }, [user, isPro])
+
   // Helper to check if route is active
   const isActive = (href: string, exact = false) => {
     if (exact) {

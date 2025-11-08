@@ -35,10 +35,16 @@ class UserResponse(BaseModel):
     id: UUID
     email: str
     subscription_tier: str
+    is_verified: bool
+    created_at: str
 
     @field_serializer('id')
     def serialize_id(self, value: UUID) -> str:
         return str(value)
+
+    @field_serializer('created_at')
+    def serialize_created_at(self, value) -> str:
+        return value.isoformat() if value else ''
 
 
 class Token(BaseModel):
