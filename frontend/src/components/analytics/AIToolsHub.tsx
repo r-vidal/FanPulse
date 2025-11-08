@@ -7,7 +7,7 @@ import {
 } from '@/lib/mockData'
 import {
   Sparkles, AlertTriangle, TrendingDown, Users, Hash, Copy, CheckCircle2,
-  Music, Instagram, Twitter, Youtube, Facebook, Zap, Target, TrendingUp
+  Instagram, Twitter, Youtube, Facebook, Zap, Target, TrendingUp
 } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 
