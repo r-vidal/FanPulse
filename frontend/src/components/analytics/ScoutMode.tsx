@@ -6,8 +6,9 @@ import { mockScoutArtists, ScoutArtist } from '@/lib/mockData'
 import {
   Search, TrendingUp, Sparkles, AlertTriangle, CheckCircle2,
   Music, Instagram, Youtube, Filter, X, Eye, Zap, ChevronDown, ChevronUp,
-  Globe, Languages, Users, Sliders, Target
+  Globe, Languages, Users, Sliders, Target, RefreshCw
 } from 'lucide-react'
+import * as scoutApi from '@/lib/api/scout'
 
 type SortField = 'potentialScore' | 'viralRisk' | 'trendVelocity' | 'monthlyListeners'
 type SortDirection = 'asc' | 'desc'
@@ -194,6 +195,28 @@ export default function ScoutMode() {
     setHideAI(false)
   }
 
+  const loadRealData = async () => {
+    setLoading(true)
+    try {
+      const country = filters.countries.length > 0 ? filters.countries[0] : 'US'
+      const genresParam = filters.genres.length > 0 ? filters.genres.join(',') : undefined
+
+      const response = await scoutApi.scanNewReleases({
+        country,
+        limit: 50,
+        genres: genresParam,
+      })
+
+      const convertedArtists = response.artists.map(scoutApi.convertToFrontendFormat)
+      setData(convertedArtists)
+    } catch (error) {
+      console.error('Failed to load real data:', error)
+      // Keep mock data on error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const activeFiltersCount = useMemo(() => {
     let count = 0
     if (filters.countries.length > 0) count++
@@ -233,21 +256,30 @@ export default function ScoutMode() {
             AI-powered talent discovery with advanced filtering
           </p>
         </div>
-        <button
-          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Sliders className="w-4 h-4" />
-          Advanced Filters
-          {activeFiltersCount > 0 && (
-            <span className="px-2 py-0.5 bg-white text-blue-600 rounded-full text-xs font-bold">
-              {activeFiltersCount}
-            </span>
-          )}
-          {showAdvancedFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={loadRealData}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Scanning...' : 'Scan Spotify'}
+          </button>
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Sliders className="w-4 h-4" />
+            Advanced Filters
+            {activeFiltersCount > 0 && (
+              <span className="px-2 py-0.5 bg-white text-blue-600 rounded-full text-xs font-bold">
+                {activeFiltersCount}
+              </span>
+            )}
+            {showAdvancedFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
-
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
