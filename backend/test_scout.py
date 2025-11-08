@@ -24,7 +24,7 @@ def test_scout():
         print("✅ Spotify Scout initialized successfully")
 
         print("\n🔍 Scanning new releases (US market, limit 20)...")
-        print("   This will scan for emerging artists with 1-5 releases...")
+        print("   This will scan for emerging artists with 1-10 releases...")
 
         artists = scout.scan_new_releases(
             country='US',

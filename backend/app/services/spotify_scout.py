@@ -77,8 +77,14 @@ class SpotifyScout:
 
                     total_releases = artist_albums['total']
 
-                    # Filter: only artists with 1-5 releases (emerging)
-                    if not (1 <= total_releases <= 5):
+                    # Filter: only artists with 1-10 releases (emerging)
+                    # Relaxed from 5 to 10 to find more artists
+                    if not (1 <= total_releases <= 10):
+                        continue
+
+                    # Additional filter: skip very popular artists (they're not emerging)
+                    popularity = artist_details.get('popularity', 0)
+                    if popularity > 60:
                         continue
 
                     # Filter by genre if specified

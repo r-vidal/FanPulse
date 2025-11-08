@@ -29,7 +29,7 @@ python test_scout.py
 
 Ce script va :
 - ✅ Se connecter à Spotify
-- ✅ Scanner les nouveaux artistes émergents (1-5 releases)
+- ✅ Scanner les nouveaux artistes émergents (1-10 releases)
 - ✅ Analyser l'audio pour détecter l'IA
 - ✅ Générer des tags automatiques
 - ✅ Calculer le score de potentiel
@@ -76,7 +76,7 @@ Tu verras tous les endpoints Scout A&R avec la possibilité de les tester direct
 ## Fonctionnalités disponibles
 
 ### 🎯 Scan de nouveaux artistes
-- Filtre automatique : artistes avec 1-5 releases seulement
+- Filtre automatique : artistes avec 1-10 releases seulement
 - Détection des premiers EP/singles
 - Scan par pays (US, FR, UK, etc.)
 - Filtre par genre
