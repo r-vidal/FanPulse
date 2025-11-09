@@ -14,23 +14,23 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-b border-gray-200 z-50">
+      <nav className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <Music className="w-8 h-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">FanPulse</span>
+              <Music className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              <span className="text-xl font-bold text-gray-900 dark:text-white">FanPulse</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
-              <a href="#faq" className="text-gray-600 hover:text-gray-900 transition-colors">FAQ</a>
-              <Link href="/login" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Features</a>
+              <a href="#pricing" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Pricing</a>
+              <a href="#faq" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">FAQ</a>
+              <Link href="/login" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
                 Sign In
               </Link>
               <Link
                 href="/register"
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 dark:bg-blue-700 text-white px-6 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-sm"
               >
                 Start Free Trial
               </Link>
@@ -107,112 +107,115 @@ export default function Home() {
 
         {/* Wave separator */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="dark:hidden">
             <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
+          </svg>
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="hidden dark:block">
+            <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#111827"/>
           </svg>
         </div>
       </section>
 
       {/* Social Proof */}
-      <section className="py-12 bg-white border-b border-gray-200">
+      <section className="py-12 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-600 mb-8 font-medium">Trusted by music professionals worldwide</p>
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-8 font-medium">Trusted by music professionals worldwide</p>
           <div className="flex items-center justify-center gap-12 opacity-50 grayscale">
-            <div className="text-2xl font-bold text-gray-400">Spotify</div>
-            <div className="text-2xl font-bold text-gray-400">Apple Music</div>
-            <div className="text-2xl font-bold text-gray-400">YouTube</div>
-            <div className="text-2xl font-bold text-gray-400">Instagram</div>
-            <div className="text-2xl font-bold text-gray-400">TikTok</div>
+            <div className="text-2xl font-bold text-gray-400 dark:text-gray-500">Spotify</div>
+            <div className="text-2xl font-bold text-gray-400 dark:text-gray-500">Apple Music</div>
+            <div className="text-2xl font-bold text-gray-400 dark:text-gray-500">YouTube</div>
+            <div className="text-2xl font-bold text-gray-400 dark:text-gray-500">Instagram</div>
+            <div className="text-2xl font-bold text-gray-400 dark:text-gray-500">TikTok</div>
           </div>
         </div>
       </section>
 
       {/* Core Features - Enhanced */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-block mb-4 px-4 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+            <div className="inline-block mb-4 px-4 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-semibold">
               CORE ANALYTICS
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Everything You Need to Grow
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               Replace ChartMetric ($1,400/mo), Buffer ($99/mo), Linktree ($5/mo), Mailchimp ($50/mo) with one platform at $999/mo
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Feature 1 - Momentum */}
-            <div className="group bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200 hover:shadow-xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30 p-8 rounded-2xl border border-blue-200 dark:border-blue-800/50 hover:shadow-xl transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-blue-600 dark:bg-blue-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <TrendingUp className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Momentum Index</h3>
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Momentum Index</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                 Real-time 0-10 score tracking artist growth velocity across 5 signals: streams, engagement, followers, playlists, virality.
               </p>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <span>Fire / Growing / Stable / Declining status</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <span>90-day historical tracking</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <span>Inflection point detection</span>
                 </li>
               </ul>
             </div>
 
             {/* Feature 2 - Superfans */}
-            <div className="group bg-gradient-to-br from-purple-50 to-purple-100 p-8 rounded-2xl border border-purple-200 hover:shadow-xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="group bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30 p-8 rounded-2xl border border-purple-200 dark:border-purple-800/50 hover:shadow-xl transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-purple-600 dark:bg-purple-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Heart className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Superfan Analysis</h3>
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Superfan Analysis</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                 Identify Top 20 (SOLO) or Top 100 (PRO+) fans with Fan Value Score (FVS 0-100) breakdown.
               </p>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-purple-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5" />
                   <span>Listening 40% + Engagement 35% + Monetization 25%</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-purple-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5" />
                   <span>Location & preference tracking</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-purple-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5" />
                   <span>Personalized DM templates</span>
                 </li>
               </ul>
             </div>
 
             {/* Feature 3 - Actions */}
-            <div className="group bg-gradient-to-br from-pink-50 to-pink-100 p-8 rounded-2xl border border-pink-200 hover:shadow-xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-pink-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="group bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/50 dark:to-pink-900/30 p-8 rounded-2xl border border-pink-200 dark:border-pink-800/50 hover:shadow-xl transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-pink-600 dark:bg-pink-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Zap className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Next Best Actions</h3>
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Next Best Actions</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                 AI engine analyzes 20+ rules to recommend 1 priority action per artist daily with urgency + impact.
               </p>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-pink-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-pink-600 dark:text-pink-400 mt-0.5" />
                   <span>Critical / High / Medium / Low urgency</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-pink-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-pink-600 dark:text-pink-400 mt-0.5" />
                   <span>Reasoning + expected impact</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-pink-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-pink-600 dark:text-pink-400 mt-0.5" />
                   <span>48h impact measurement</span>
                 </li>
               </ul>
@@ -227,10 +230,10 @@ export default function Home() {
               { icon: BarChart3, title: 'Opportunity Alerts', desc: '7 real-time alerts (viral spike, momentum drop)' },
               { icon: Target, title: 'Scout Mode', desc: 'Auto-scan 10k artists/day + AI detection' }
             ].map((feature, i) => (
-              <div key={i} className="bg-gray-50 p-6 rounded-xl border border-gray-200 hover:border-blue-300 transition-colors">
-                <feature.icon className="w-8 h-8 text-blue-600 mb-3" />
-                <h4 className="font-bold text-gray-900 mb-2">{feature.title}</h4>
-                <p className="text-sm text-gray-600">{feature.desc}</p>
+              <div key={i} className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700/50 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
+                <feature.icon className="w-8 h-8 text-blue-600 dark:text-blue-400 mb-3" />
+                <h4 className="font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -238,24 +241,24 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-gray-50">
+      <section id="pricing" className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
               Start free, scale as you grow. All plans include 14-day free trial.
             </p>
 
             {/* Toggle */}
-            <div className="inline-flex items-center gap-4 bg-white p-1 rounded-lg border border-gray-200">
+            <div className="inline-flex items-center gap-4 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setActivePricing('monthly')}
                 className={`px-6 py-2 rounded-md transition-colors ${
                   activePricing === 'monthly'
                     ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 Monthly
@@ -265,11 +268,11 @@ export default function Home() {
                 className={`px-6 py-2 rounded-md transition-colors ${
                   activePricing === 'yearly'
                     ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 Yearly
-                <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold">
                   Save 20%
                 </span>
               </button>
@@ -278,197 +281,197 @@ export default function Home() {
 
           <div className="grid md:grid-cols-4 gap-8">
             {/* SOLO */}
-            <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-blue-300 transition-all">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">SOLO</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-8 hover:border-blue-300 dark:hover:border-blue-600 transition-all">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">SOLO</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">
+                <span className="text-4xl font-bold text-gray-900 dark:text-white">
                   ${activePricing === 'monthly' ? '199' : '159'}
                 </span>
-                <span className="text-gray-600">/month</span>
+                <span className="text-gray-600 dark:text-gray-400">/month</span>
               </div>
-              <p className="text-gray-600 mb-6">Perfect for independent artists</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">Perfect for independent artists</p>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span>Core Analytics (Momentum, Superfans Top 20, Actions)</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span>Platform Integrations (Spotify, Instagram)</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span>Weekly Reports</span>
                 </li>
               </ul>
               <Link
                 href="/register"
-                className="block w-full text-center bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="block w-full text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 Start Free Trial
               </Link>
             </div>
 
             {/* PRO */}
-            <div className="bg-white rounded-2xl border-2 border-blue-500 p-8 relative transform scale-105 shadow-xl">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-blue-500 dark:border-blue-600 p-8 relative transform scale-105 shadow-xl">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 dark:bg-blue-700 text-white px-4 py-1 rounded-full text-sm font-bold">
                 Most Popular
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">PRO</h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">PRO</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">
+                <span className="text-4xl font-bold text-gray-900 dark:text-white">
                   ${activePricing === 'monthly' ? '399' : '319'}
                 </span>
-                <span className="text-gray-600">/month</span>
+                <span className="text-gray-600 dark:text-gray-400">/month</span>
               </div>
-              <p className="text-gray-600 mb-6">For professional managers</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">For professional managers</p>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span><strong>Everything in SOLO</strong></span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span>AI Predictions (Revenue, Release Optimizer)</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span>Opportunity Alerts</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span>Email/SMS Campaigns</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <span>Superfans Top 100</span>
                 </li>
               </ul>
               <Link
                 href="/register"
-                className="block w-full text-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                className="block w-full text-center bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
               >
                 Start Free Trial
               </Link>
             </div>
 
             {/* LABEL */}
-            <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-purple-300 transition-all">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">LABEL</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-8 hover:border-purple-300 dark:hover:border-purple-600 transition-all">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">LABEL</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">
+                <span className="text-4xl font-bold text-gray-900 dark:text-white">
                   ${activePricing === 'monthly' ? '999' : '799'}
                 </span>
-                <span className="text-gray-600">/month</span>
+                <span className="text-gray-600 dark:text-gray-400">/month</span>
               </div>
-              <p className="text-gray-600 mb-6">For indie labels</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">For indie labels</p>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                   <span><strong>Everything in PRO</strong></span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                   <span>Scout Mode (10k artists/day scan)</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                   <span>Portfolio Health Score</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                   <span>Royalty Tracking + P&L</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                   <span>10 Team Seats</span>
                 </li>
               </ul>
               <Link
                 href="/register"
-                className="block w-full text-center bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="block w-full text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 Start Free Trial
               </Link>
             </div>
 
             {/* ENTERPRISE */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border-2 border-gray-700 p-8 text-white hover:border-yellow-500 transition-all">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 rounded-2xl border-2 border-gray-700 dark:border-gray-600 p-8 text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all">
               <h3 className="text-2xl font-bold mb-2">ENTERPRISE</h3>
               <div className="mb-6">
                 <span className="text-4xl font-bold">Custom</span>
               </div>
-              <p className="text-gray-300 mb-6">For major labels</p>
+              <p className="text-gray-300 dark:text-gray-400 mb-6">For major labels</p>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-200 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                   <span><strong>Everything in LABEL</strong></span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-200 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                   <span>White-glove onboarding</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-200 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                   <span>Custom integrations (SAP, Salesforce)</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-200 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                   <span>Dedicated account manager 24/7</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <CheckCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start gap-2 text-sm text-gray-200 dark:text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                   <span>Unlimited seats</span>
                 </li>
               </ul>
               <Link
                 href="/contact"
-                className="block w-full text-center bg-yellow-500 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-colors"
+                className="block w-full text-center bg-yellow-500 dark:bg-yellow-600 text-gray-900 dark:text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 dark:hover:bg-yellow-500 transition-colors"
               >
                 Contact Sales
               </Link>
             </div>
           </div>
 
-          <p className="text-center text-gray-600 mt-8">
+          <p className="text-center text-gray-600 dark:text-gray-400 mt-8">
             All plans include 14-day free trial. No credit card required to start.
           </p>
         </div>
       </section>
 
       {/* Trust Signals */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Bank-Level Security</h3>
-              <p className="text-gray-600">256-bit SSL encryption. SOC 2 Type II compliant. GDPR ready.</p>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-2">Bank-Level Security</h3>
+              <p className="text-gray-600 dark:text-gray-400">256-bit SSL encryption. SOC 2 Type II compliant. GDPR ready.</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">99.9% Uptime SLA</h3>
-              <p className="text-gray-600">Reliable infrastructure. Daily automated backups. 24/7 monitoring.</p>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-2">99.9% Uptime SLA</h3>
+              <p className="text-gray-600 dark:text-gray-400">Reliable infrastructure. Daily automated backups. 24/7 monitoring.</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8 text-purple-600" />
+              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="w-8 h-8 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Premium Support</h3>
-              <p className="text-gray-600">Email support (24h response). PRO+ gets priority + live chat.</p>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-2">Premium Support</h3>
+              <p className="text-gray-600 dark:text-gray-400">Email support (24h response). PRO+ gets priority + live chat.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 bg-gray-50">
+      <section id="faq" className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-12 text-center">
             Frequently Asked Questions
           </h2>
           <div className="space-y-6">
@@ -494,12 +497,12 @@ export default function Home() {
                 a: 'No! We use public Spotify API for basic metrics. For advanced features (detailed demographics), Spotify for Artists helps but isn\'t required.'
               }
             ].map((faq, i) => (
-              <details key={i} className="bg-white rounded-lg border border-gray-200 p-6 group">
-                <summary className="font-semibold text-gray-900 cursor-pointer flex items-center justify-between">
+              <details key={i} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 group">
+                <summary className="font-semibold text-gray-900 dark:text-white cursor-pointer flex items-center justify-between">
                   {faq.q}
-                  <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                  <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500 group-open:rotate-180 transition-transform" />
                 </summary>
-                <p className="text-gray-600 mt-4 leading-relaxed">{faq.a}</p>
+                <p className="text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">{faq.a}</p>
               </details>
             ))}
           </div>
