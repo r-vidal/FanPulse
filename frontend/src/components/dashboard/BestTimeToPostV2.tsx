@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import { Clock, TrendingUp, Sparkles } from 'lucide-react'
+import { socialApi } from '@/lib/api/social'
 
 interface TimeSlot {
   day: number // 0-6 (Sunday-Saturday)
@@ -36,48 +37,40 @@ export function BestTimeToPostV2() {
     try {
       setLoading(true)
 
-      // TODO: Replace with actual API call
-      // Simulate data for now
-      const mockData: TimeSlot[] = []
-      const mockBestTimes: BestTime[] = []
+      // Fetch data from API
+      const response = await socialApi.getOptimalTimes()
 
-      // Generate mock heatmap data
-      for (let day = 0; day < 7; day++) {
-        for (let hour = 6; hour < 24; hour += 3) {
-          // Simulate higher scores during peak hours (6pm-9pm) on weekdays
-          let score = Math.random() * 40 + 20 // Base 20-60
-          if (hour >= 18 && hour <= 21 && day >= 1 && day <= 5) {
-            score = Math.random() * 30 + 70 // Peak 70-100
-          } else if (hour >= 12 && hour <= 15) {
-            score = Math.random() * 20 + 50 // Lunch 50-70
-          }
-
-          mockData.push({ day, hour, score })
-        }
+      // Transform API data to heatmap format
+      const dayMap: Record<string, number> = {
+        'sunday': 0, 'monday': 1, 'tuesday': 2, 'wednesday': 3,
+        'thursday': 4, 'friday': 5, 'saturday': 6
       }
 
-      // Find top 3 best times
-      const sorted = [...mockData]
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 3)
+      const heatmap: TimeSlot[] = response.optimal_times.map(slot => ({
+        day: dayMap[slot.day.toLowerCase()],
+        hour: slot.hour,
+        score: slot.engagement_score
+      }))
 
-      sorted.forEach(slot => {
-        const dayName = days[slot.day]
+      // Get top 3 best times
+      const top3 = response.optimal_times.slice(0, 3).map(slot => {
         const hourStr = slot.hour >= 12
           ? `${slot.hour === 12 ? 12 : slot.hour - 12}:00 PM`
           : `${slot.hour === 0 ? 12 : slot.hour}:00 AM`
 
-        mockBestTimes.push({
-          day: dayName,
+        return {
+          day: slot.day,
           hour: hourStr,
-          score: Math.round(slot.score)
-        })
+          score: slot.engagement_score
+        }
       })
 
-      setHeatmapData(mockData)
-      setBestTimes(mockBestTimes)
+      setHeatmapData(heatmap)
+      setBestTimes(top3)
     } catch (error) {
       console.error('Failed to load best times:', error)
+      setHeatmapData([])
+      setBestTimes([])
     } finally {
       setLoading(false)
     }

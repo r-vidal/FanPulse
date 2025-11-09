@@ -17,13 +17,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Heart, TrendingUp, MessageCircle, Share2, Eye } from 'lucide-react'
-
-interface EngagementDataPoint {
-  date: string
-  instagram: number
-  tiktok: number
-  youtube: number
-}
+import { socialApi, SocialEngagementData, SocialStats } from '@/lib/api/social'
 
 interface TopPost {
   platform: 'instagram' | 'tiktok' | 'youtube'
@@ -33,17 +27,10 @@ interface TopPost {
   date: string
 }
 
-interface EngagementStats {
-  total_engagement: number
-  change_7d: number
-  best_platform: string
-  avg_engagement_rate: number
-}
-
 export function SocialEngagementV2() {
-  const [data, setData] = useState<EngagementDataPoint[]>([])
+  const [data, setData] = useState<SocialEngagementData[]>([])
   const [topPosts, setTopPosts] = useState<TopPost[]>([])
-  const [stats, setStats] = useState<EngagementStats | null>(null)
+  const [stats, setStats] = useState<SocialStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -54,27 +41,13 @@ export function SocialEngagementV2() {
     try {
       setLoading(true)
 
-      // TODO: Replace with actual API call
-      // Simulate data for now
-      const mockData: EngagementDataPoint[] = []
-      const days = 30
+      // Fetch data from API
+      const response = await socialApi.getEngagement('30d')
 
-      const startDate = new Date()
-      startDate.setDate(startDate.getDate() - days)
+      setData(response.data)
+      setStats(response.stats)
 
-      for (let i = 0; i < days; i++) {
-        const date = new Date(startDate)
-        date.setDate(date.getDate() + i)
-
-        mockData.push({
-          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          instagram: Math.round(1000 + Math.random() * 500 + (i * 10)),
-          tiktok: Math.round(2000 + Math.random() * 800 + (i * 20)),
-          youtube: Math.round(500 + Math.random() * 300 + (i * 5)),
-        })
-      }
-
-      // Mock top posts
+      // Mock top posts (TODO: Create API endpoint for this)
       const mockTopPosts: TopPost[] = [
         {
           platform: 'tiktok',
@@ -98,38 +71,12 @@ export function SocialEngagementV2() {
           date: '1 week ago'
         }
       ]
-
-      // Calculate stats
-      const totalEngagement = mockData.reduce((sum, d) =>
-        sum + d.instagram + d.tiktok + d.youtube, 0
-      )
-      const firstWeek = mockData.slice(0, 7).reduce((sum, d) =>
-        sum + d.instagram + d.tiktok + d.youtube, 0
-      )
-      const lastWeek = mockData.slice(-7).reduce((sum, d) =>
-        sum + d.instagram + d.tiktok + d.youtube, 0
-      )
-      const change = ((lastWeek - firstWeek) / firstWeek) * 100
-
-      // Determine best platform
-      const platformTotals = {
-        instagram: mockData.reduce((sum, d) => sum + d.instagram, 0),
-        tiktok: mockData.reduce((sum, d) => sum + d.tiktok, 0),
-        youtube: mockData.reduce((sum, d) => sum + d.youtube, 0),
-      }
-      const bestPlatform = Object.entries(platformTotals).sort((a, b) => b[1] - a[1])[0][0]
-
-      setStats({
-        total_engagement: totalEngagement,
-        change_7d: change,
-        best_platform: bestPlatform,
-        avg_engagement_rate: 4.2 // Mock percentage
-      })
-
-      setData(mockData)
       setTopPosts(mockTopPosts)
     } catch (error) {
       console.error('Failed to load engagement data:', error)
+      setData([])
+      setStats(null)
+      setTopPosts([])
     } finally {
       setLoading(false)
     }

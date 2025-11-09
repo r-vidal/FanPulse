@@ -17,23 +17,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { TrendingUp, Play, Calendar } from 'lucide-react'
-
-interface StreamDataPoint {
-  date: string
-  total: number
-  spotify: number
-  appleMusic: number
-  youtube: number
-  other: number
-}
-
-interface StreamStats {
-  total_30d: number
-  change_30d: number
-  average_daily: number
-  peak_day: string
-  peak_streams: number
-}
+import { streamsApi, StreamDataPoint, StreamStats } from '@/lib/api/streams'
 
 export function StreamEvolutionV2() {
   const [data, setData] = useState<StreamDataPoint[]>([])
@@ -49,55 +33,16 @@ export function StreamEvolutionV2() {
     try {
       setLoading(true)
 
-      // TODO: Replace with actual API call
-      // Simulate data for now
-      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90
-      const mockData: StreamDataPoint[] = []
+      // Fetch data from API
+      const response = await streamsApi.getEvolution(timeRange)
 
-      const startDate = new Date()
-      startDate.setDate(startDate.getDate() - days)
-
-      for (let i = 0; i < days; i++) {
-        const date = new Date(startDate)
-        date.setDate(date.getDate() + i)
-
-        // Simulate realistic streaming patterns
-        const baseStreams = 15000 + Math.random() * 5000
-        const trend = (i / days) * 10000 // Gradual uptrend
-        const weekendBoost = date.getDay() === 5 || date.getDay() === 6 ? 1.2 : 1.0
-        const randomVariation = 0.9 + Math.random() * 0.2
-
-        const total = Math.round((baseStreams + trend) * weekendBoost * randomVariation)
-
-        mockData.push({
-          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          total,
-          spotify: Math.round(total * 0.65),
-          appleMusic: Math.round(total * 0.20),
-          youtube: Math.round(total * 0.10),
-          other: Math.round(total * 0.05),
-        })
-      }
-
-      // Calculate stats
-      const totalStreams = mockData.reduce((sum, d) => sum + d.total, 0)
-      const firstWeekTotal = mockData.slice(0, 7).reduce((sum, d) => sum + d.total, 0)
-      const lastWeekTotal = mockData.slice(-7).reduce((sum, d) => sum + d.total, 0)
-      const change = ((lastWeekTotal - firstWeekTotal) / firstWeekTotal) * 100
-
-      const peakDay = mockData.reduce((max, d) => d.total > max.total ? d : max, mockData[0])
-
-      setStats({
-        total_30d: totalStreams,
-        change_30d: change,
-        average_daily: Math.round(totalStreams / days),
-        peak_day: peakDay.date,
-        peak_streams: peakDay.total
-      })
-
-      setData(mockData)
+      setData(response.data)
+      setStats(response.stats)
     } catch (error) {
       console.error('Failed to load stream data:', error)
+      // Set empty data on error
+      setData([])
+      setStats(null)
     } finally {
       setLoading(false)
     }
