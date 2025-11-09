@@ -1,6 +1,6 @@
 """Analytics tasks for Celery"""
 import logging
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 from sqlalchemy import select
 from app.core.celery_app import celery_app
