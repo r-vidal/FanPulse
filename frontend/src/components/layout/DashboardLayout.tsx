@@ -11,6 +11,8 @@ import {
   Share2, PieChart, Music, Brain
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
+import UpgradeBanner from '@/components/ui/UpgradeBanner'
 import CommandPalette from '@/components/ui/CommandPalette'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import ArtistSelector from '@/components/ui/ArtistSelector'
@@ -337,6 +339,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </button>
           </div>
         </header>
+
+        {/* Upgrade Banner - Show only for free tier */}
+        {!isPro && <UpgradeBanner />}
 
         {/* Page content */}
         <main className="p-4 lg:p-8 bg-gray-50 dark:bg-gray-950 min-h-screen">{children}</main>
