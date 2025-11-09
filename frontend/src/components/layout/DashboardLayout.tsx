@@ -8,7 +8,7 @@ import {
   Home, Users, BarChart3, Settings, LogOut, Calendar, DollarSign,
   Key, FileText, Bell, Crown, ListTodo, Activity, Heart, Search,
   Menu, X, ChevronLeft, ChevronRight, Sparkles, Target, MapPin,
-  Share2, PieChart, Music, Brain
+  Share2, PieChart, Music, Brain, Send
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
@@ -77,6 +77,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   ]
 
   const publishingNavigation = [
+    { name: 'Publishing Studio', href: '/dashboard/publishing', icon: Send },
     { name: 'Release Optimizer', href: '/dashboard/releases', icon: Calendar },
     { name: 'Playlists Strategy', href: '/dashboard/playlists', icon: Music },
     { name: 'Social ROI', href: '/dashboard/social-roi', icon: Share2 },
