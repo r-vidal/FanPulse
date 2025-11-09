@@ -1,7 +1,7 @@
 """Add publishing studio tables
 
 Revision ID: 014_publishing_studio
-Revises: 013_fix_superfans_schema
+Revises: 010_fix_superfans_schema
 Create Date: 2025-11-09
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '014_publishing_studio'
-down_revision = '013_fix_superfans_schema'
+down_revision = '010_fix_superfans_schema'
 branch_labels = None
 depends_on = None
 
