@@ -33,6 +33,7 @@ redis==5.0.8
 
 # Task queue
 celery==5.4.0
+flower==2.0.1
 
 # Analytics and ML
 scikit-learn==1.5.2

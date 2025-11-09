@@ -43,6 +43,24 @@ celery_app.conf.beat_schedule = {
         "schedule": 60 * 60,  # Every hour
     },
 
+    # Calculate FVS for all artists daily at 3 AM UTC
+    "calculate-fvs-daily": {
+        "task": "app.tasks.analytics.calculate_all_fvs",
+        "schedule": crontab(hour=3, minute=0),
+    },
+
+    # Calculate Momentum Index every 6 hours
+    "calculate-momentum-periodic": {
+        "task": "app.tasks.analytics.calculate_all_momentum",
+        "schedule": 6 * 60 * 60,  # Every 6 hours
+    },
+
+    # Detect viral spikes every 3 hours
+    "detect-viral-spikes-periodic": {
+        "task": "app.tasks.analytics.detect_all_viral_spikes",
+        "schedule": 3 * 60 * 60,  # Every 3 hours
+    },
+
     # Send weekly email reports every Monday at 8 AM UTC
     "send-weekly-reports": {
         "task": "app.tasks.email.send_weekly_reports",
