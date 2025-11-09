@@ -15,15 +15,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Copy and make entrypoint script executable
+# Copy and make entrypoint scripts executable
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY entrypoint_with_merge.sh /entrypoint_with_merge.sh
+RUN chmod +x /entrypoint.sh /entrypoint_with_merge.sh
 
 # Expose port
 EXPOSE 8000
 
-# Set entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+# Set entrypoint (use the auto-merge version)
+ENTRYPOINT ["/entrypoint_with_merge.sh"]
 
 # Run the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
