@@ -199,7 +199,7 @@ export default function AlertsPage() {
                   <span className="text-sm font-medium text-red-700">Critical</span>
                   <AlertTriangle className="w-5 h-5 text-red-600" />
                 </div>
-                <p className="text-3xl font-bold text-red-900">{stats.by_priority.critical}</p>
+                <p className="text-3xl font-bold text-red-900">{stats.by_priority?.critical || 0}</p>
                 <p className="text-xs text-red-600 mt-1">Urgent action needed</p>
               </div>
 
