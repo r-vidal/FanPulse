@@ -61,6 +61,12 @@ celery_app.conf.beat_schedule = {
         "schedule": 3 * 60 * 60,  # Every 3 hours
     },
 
+    # Publish scheduled social media posts every minute
+    "publish-scheduled-posts": {
+        "task": "app.tasks.publishing.publish_scheduled_posts",
+        "schedule": 60,  # Every minute
+    },
+
     # Send weekly email reports every Monday at 8 AM UTC
     "send-weekly-reports": {
         "task": "app.tasks.email.send_weekly_reports",
