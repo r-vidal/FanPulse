@@ -55,36 +55,42 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     router.push('/login')
   }
 
-  // Navigation groups
-  const coreNavigation = [
+  // Modern Navigation Structure - Reorganized for better UX
+  const homeNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, exact: true },
-    { name: 'Actions', href: '/dashboard/actions', icon: ListTodo },
   ]
 
-  const analyticsNavigation = [
+  const portfolioNavigation = [
+    { name: 'Artists', href: '/dashboard/artists', icon: Users },
     { name: 'Momentum', href: '/dashboard/momentum', icon: Activity },
     { name: 'Superfans', href: '/dashboard/superfans', icon: Heart },
     { name: 'Fan Value Score', href: '/dashboard/fvs', icon: Target },
-    { name: 'Demographics', href: '/dashboard/demographics', icon: PieChart },
-    { name: 'Playlists', href: '/dashboard/playlists', icon: Music },
+  ]
+
+  const aiNavigation = [
+    { name: 'AI Tools Hub', href: '/dashboard/ai-tools', icon: Sparkles },
+    { name: 'AI Dashboard', href: '/dashboard/ai', icon: Brain },
+    { name: 'Smart Alerts', href: '/dashboard/alerts', icon: Bell },
+    { name: 'Scout Mode A&R', href: '/dashboard/scout', icon: Search },
+  ]
+
+  const publishingNavigation = [
+    { name: 'Release Optimizer', href: '/dashboard/releases', icon: Calendar },
+    { name: 'Playlists Strategy', href: '/dashboard/playlists', icon: Music },
     { name: 'Social ROI', href: '/dashboard/social-roi', icon: Share2 },
-    { name: 'Artists', href: '/dashboard/artists', icon: Users },
+  ]
+
+  const analyticsNavigation = [
+    { name: 'Demographics', href: '/dashboard/demographics', icon: PieChart },
+    { name: 'Revenue Forecasts', href: '/dashboard/forecasts', icon: DollarSign },
+    { name: 'Reports', href: '/dashboard/reports', icon: FileText },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   ]
 
-  const proNavigation = [
-    { name: 'AI Dashboard', href: '/dashboard/ai', icon: Brain },
-    { name: 'Release Optimizer', href: '/dashboard/releases', icon: Calendar },
-    { name: 'Revenue Forecasting', href: '/dashboard/forecasts', icon: DollarSign },
-    { name: 'Alerts', href: '/dashboard/alerts', icon: Bell },
-    { name: 'Scout Mode A&R', href: '/dashboard/scout', icon: Target },
+  const settingsNavigation = [
+    { name: 'Actions', href: '/dashboard/actions', icon: ListTodo },
     { name: 'Tour Planning', href: '/dashboard/tour-planning', icon: MapPin },
-    { name: 'AI Tools Hub', href: '/dashboard/ai-tools', icon: Sparkles },
-  ]
-
-  const adminNavigation = [
     { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
-    { name: 'Reports', href: '/dashboard/reports', icon: FileText },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ]
 
@@ -160,8 +166,37 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        {/* Core */}
-        {coreNavigation.map((item) => (
+        {/* Home */}
+        {homeNavigation.map((item) => (
+          <NavLink key={item.name} item={item} collapsed={collapsed} />
+        ))}
+
+        {/* Portfolio */}
+        <SectionHeader title="Portfolio" collapsed={collapsed} />
+        {portfolioNavigation.map((item) => (
+          <NavLink key={item.name} item={item} collapsed={collapsed} />
+        ))}
+
+        {/* AI & Insights - PRO Features */}
+        {isPro && (
+          <>
+            <div className={`mt-6 mb-3 px-4 flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
+              <Crown className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+              {!collapsed && (
+                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                  AI & Insights
+                </span>
+              )}
+            </div>
+            {aiNavigation.map((item) => (
+              <NavLink key={item.name} item={item} collapsed={collapsed} />
+            ))}
+          </>
+        )}
+
+        {/* Publishing */}
+        <SectionHeader title="Publishing" collapsed={collapsed} />
+        {publishingNavigation.map((item) => (
           <NavLink key={item.name} item={item} collapsed={collapsed} />
         ))}
 
@@ -171,26 +206,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <NavLink key={item.name} item={item} collapsed={collapsed} />
         ))}
 
-        {/* PRO Features */}
-        {isPro && (
-          <>
-            <div className={`mt-6 mb-3 px-4 flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
-              <Crown className="h-4 w-4 text-yellow-600 flex-shrink-0" />
-              {!collapsed && (
-                <span className="text-xs font-bold text-yellow-600 uppercase tracking-wider">
-                  PRO
-                </span>
-              )}
-            </div>
-            {proNavigation.map((item) => (
-              <NavLink key={item.name} item={item} collapsed={collapsed} />
-            ))}
-          </>
-        )}
-
-        {/* Admin */}
-        <SectionHeader title="Admin" collapsed={collapsed} />
-        {adminNavigation.map((item) => (
+        {/* Settings */}
+        <SectionHeader title="Settings" collapsed={collapsed} />
+        {settingsNavigation.map((item) => (
           <NavLink key={item.name} item={item} collapsed={collapsed} />
         ))}
       </nav>
